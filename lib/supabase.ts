@@ -1,16 +1,30 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
+
+// Lazily-created singletons — avoids module-level instantiation during build
+let _supabase: SupabaseClient | null = null
+let _supabaseAdmin: SupabaseClient | null = null
 
 // Browser client (uses anon key, respects RLS)
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+export function getSupabase(): SupabaseClient {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }
+  return _supabase
+}
 
 // Server client (uses service role, bypasses RLS — use carefully)
-export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export function getSupabaseAdmin(): SupabaseClient {
+  if (!_supabaseAdmin) {
+    _supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return _supabaseAdmin
+}
 
 // Paper operations
 export async function savePaper(paper: {
@@ -23,7 +37,7 @@ export async function savePaper(paper: {
   page_count: number
   content: string
 }) {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('papers')
     .insert(paper)
     .select()
@@ -34,7 +48,7 @@ export async function savePaper(paper: {
 }
 
 export async function getUserPapers(userId: string) {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('papers')
     .select('id, title, topic, domain, citation_style, created_at')
     .eq('user_id', userId)
@@ -45,7 +59,7 @@ export async function getUserPapers(userId: string) {
 }
 
 export async function getPaperById(id: string, userId: string) {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('papers')
     .select('*')
     .eq('id', id)
@@ -57,7 +71,7 @@ export async function getPaperById(id: string, userId: string) {
 }
 
 export async function updatePaper(id: string, content: string) {
-  const { error } = await supabaseAdmin
+  const { error } = await getSupabaseAdmin()
     .from('papers')
     .update({ content, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -66,7 +80,7 @@ export async function updatePaper(id: string, content: string) {
 }
 
 export async function deletePaper(id: string) {
-  const { error } = await supabaseAdmin
+  const { error } = await getSupabaseAdmin()
     .from('papers')
     .delete()
     .eq('id', id)
