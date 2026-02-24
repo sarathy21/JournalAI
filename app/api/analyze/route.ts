@@ -2,11 +2,8 @@ import Groq from 'groq-sdk'
 import { auth } from '@clerk/nextjs/server'
 import { buildAnalysisPrompt } from '@/lib/prompts'
 
-const client = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-})
-
 export async function POST(request: Request) {
+  const client = new Groq({ apiKey: process.env.GROQ_API_KEY })
   const { userId } = await auth()
   if (!userId) {
     return new Response('Unauthorized', { status: 401 })
