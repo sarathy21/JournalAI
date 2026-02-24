@@ -1,0 +1,118 @@
+﻿Γû▓ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.231.1:3000
+- Environments: .env.local
+
+Γ£ô Starting...
+Γ£ô Ready in 1359ms
+ GET / 200 in 1860ms (compile: 306ms, proxy.ts: 1244ms, render: 310ms)
+ POST / 200 in 41ms (compile: 5ms, proxy.ts: 22ms, render: 14ms)
+Γ£ô Compiled in 1032ms
+ GET / 200 in 357ms (compile: 207ms, proxy.ts: 22ms, render: 128ms)
+ GET /dashboard 200 in 2.3s (compile: 835ms, proxy.ts: 29ms, render: 1419ms)
+ GET /dashboard 200 in 347ms (compile: 10ms, proxy.ts: 20ms, render: 317ms)
+ GET /dashboard 200 in 1503ms (compile: 137ms, proxy.ts: 1223ms, render: 143ms)
+ GET / 307 in 246ms (compile: 32ms, proxy.ts: 23ms, render: 192ms)
+ GET /dashboard 200 in 721ms (compile: 5ms, proxy.ts: 15ms, render: 701ms)
+ POST /dashboard 200 in 45ms (compile: 8ms, proxy.ts: 20ms, render: 17ms)
+ GET /generate 200 in 1410ms (compile: 1357ms, proxy.ts: 26ms, render: 27ms)
+ GET /dashboard 200 in 778ms (compile: 6ms, proxy.ts: 24ms, render: 747ms)
+ GET /generate 200 in 47ms (compile: 8ms, proxy.ts: 22ms, render: 17ms)
+ GET /dashboard 200 in 3.5s (compile: 6ms, proxy.ts: 2.3s, render: 1232ms)
+ POST /dashboard 200 in 572ms (compile: 6ms, proxy.ts: 11ms, render: 555ms)
+ GET / 200 in 46ms (compile: 6ms, proxy.ts: 11ms, render: 30ms)
+ GET / 200 in 50ms (compile: 5ms, proxy.ts: 11ms, render: 35ms)
+ GET /sign-up 200 in 727ms (compile: 681ms, proxy.ts: 19ms, render: 27ms)
+ GET /sign-up?sign_up_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&sign_in_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&after_sign_in_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&after_sign_up_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&redirect_url=http%3A%2F%2Flocalhost%3A3000%2F 200 in 128ms (compile: 33ms, proxy.ts: 12ms, render: 82ms)
+ GET /sign-up/SignUp_clerk_catchall_check_1771920801483 200 in 134ms (compile: 60ms, proxy.ts: 12ms, render: 62ms)
+ GET /sign-up?sign_up_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&sign_in_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&after_sign_in_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&after_sign_up_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&redirect_url=http%3A%2F%2Flocalhost%3A3000%2F 200 in 63ms (compile: 10ms, proxy.ts: 17ms, render: 37ms)
+ GET /sign-in 200 in 879ms (compile: 834ms, proxy.ts: 15ms, render: 30ms)
+ GET /sign-in?sign_up_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&sign_in_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&after_sign_in_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&after_sign_up_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&redirect_url=http%3A%2F%2Flocalhost%3A3000%2F 200 in 128ms (compile: 36ms, proxy.ts: 13ms, render: 79ms)
+ GET /sign-in/SignIn_clerk_catchall_check_1771920804638 200 in 132ms (compile: 56ms, proxy.ts: 12ms, render: 64ms)
+ GET /sign-in?sign_up_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&sign_in_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&after_sign_in_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&after_sign_up_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&redirect_url=http%3A%2F%2Flocalhost%3A3000%2F 200 in 42ms (compile: 7ms, proxy.ts: 19ms, render: 17ms)
+ POST /sign-in/factor-one?redirect_url=http%3A%2F%2Flocalhost%3A3000%2F&after_sign_in_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&after_sign_up_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&sign_in_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&sign_up_fallback_redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard 200 in 81ms (compile: 31ms, proxy.ts: 11ms, render: 39ms)
+ GET /sign-in/factor-one/SignIn_clerk_catchall_check_1771920831360 200 in 86ms (compile: 11ms, proxy.ts: 15ms, render: 60ms)
+ GET /dashboard 200 in 336ms (compile: 5ms, proxy.ts: 10ms, render: 321ms)
+ GET /dashboard 200 in 270ms (compile: 4ms, proxy.ts: 12ms, render: 254ms)
+ GET /generate 200 in 37ms (compile: 4ms, proxy.ts: 18ms, render: 15ms)
+ POST /sign-in?redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fgenerate 200 in 192ms (compile: 64ms, proxy.ts: 31ms, render: 97ms)
+.\node_modules\.bin\next.cmd : ΓÜá Fast Refresh had to perform a full reload 
+due to a runtime error.
+    + CategoryInfo          : NotSpecified: (ΓÜá Fast Refres... runtime error. 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Γ£ô Compiled in 107ms
+ GET /generate 200 in 168ms (compile: 5ms, proxy.ts: 27ms, render: 137ms)
+ POST /generate 200 in 40ms (compile: 8ms, proxy.ts: 25ms, render: 7ms)
+ POST /sign-in?redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fgenerate 200 in 2.8s (compile: 31ms, proxy.ts: 2.7s, render: 60ms)
+Save paper error: {
+  code: 'PGRST204',
+  details: null,
+  hint: null,
+  message: "Could not find the 'page_count' column of 'papers' in the schema 
+cache"
+}
+ POST /api/papers 500 in 5.9s (compile: 1004ms, proxy.ts: 2.5s, render: 2.4s)
+ POST /api/generate 200 in 12.5s (compile: 502ms, proxy.ts: 21ms, render: 12.0s)
+ POST /api/analyze 200 in 1962ms (compile: 216ms, proxy.ts: 27ms, render: 1720ms)
+Save paper error: {
+  code: 'PGRST204',
+  details: null,
+  hint: null,
+  message: "Could not find the 'page_count' column of 'papers' in the schema 
+cache"
+}
+ POST /api/papers 500 in 823ms (compile: 5ms, proxy.ts: 10ms, render: 809ms)
+ POST /api/export 200 in 585ms (compile: 461ms, proxy.ts: 9ms, render: 115ms)
+Save paper error: {
+  code: 'PGRST204',
+  details: null,
+  hint: null,
+  message: "Could not find the 'page_count' column of 'papers' in the schema 
+cache"
+}
+ POST /api/papers 500 in 729ms (compile: 6ms, proxy.ts: 31ms, render: 692ms)
+ POST /api/papers 201 in 2.0s (compile: 123ms, proxy.ts: 587ms, render: 1329ms)
+ GET /paper/94bb7612-4e57-4e85-9d51-c5b410726a2a 200 in 1328ms (compile: 1291ms, proxy.ts: 8ms, render: 29ms)
+ GET /api/papers/94bb7612-4e57-4e85-9d51-c5b410726a2a 200 in 1383ms (compile: 1034ms, proxy.ts: 21ms, render: 327ms)
+ GET /api/papers/94bb7612-4e57-4e85-9d51-c5b410726a2a 200 in 387ms (compile: 36ms, proxy.ts: 22ms, render: 329ms)
+ GET /dashboard 200 in 427ms (compile: 8ms, proxy.ts: 22ms, render: 398ms)
+ GET /paper/94bb7612-4e57-4e85-9d51-c5b410726a2a 200 in 54ms (compile: 27ms, proxy.ts: 9ms, render: 19ms)
+ GET /api/papers/94bb7612-4e57-4e85-9d51-c5b410726a2a 200 in 331ms (compile: 25ms, proxy.ts: 17ms, render: 290ms)
+ GET /api/papers/94bb7612-4e57-4e85-9d51-c5b410726a2a 200 in 412ms (compile: 8ms, proxy.ts: 36ms, render: 368ms)
+ GET /dashboard 200 in 274ms (compile: 4ms, proxy.ts: 10ms, render: 260ms)
+ GET /generate 200 in 45ms (compile: 5ms, proxy.ts: 22ms, render: 17ms)
+ POST /api/generate 200 in 10.2s (compile: 22ms, proxy.ts: 18ms, render: 10.1s)
+ POST /api/papers 201 in 4.6s (compile: 5ms, proxy.ts: 14ms, render: 4.6s)
+ GET /paper/a5f7d302-0f1b-4cc6-b1cc-7118bc0d8cc9 200 in 83ms (compile: 41ms, proxy.ts: 14ms, render: 28ms)
+ GET /api/papers/a5f7d302-0f1b-4cc6-b1cc-7118bc0d8cc9 200 in 1653ms (compile: 30ms, proxy.ts: 14ms, render: 1609ms)
+ GET /api/papers/a5f7d302-0f1b-4cc6-b1cc-7118bc0d8cc9 200 in 612ms (compile: 38ms, proxy.ts: 58ms, render: 516ms)
+ POST /api/analyze 200 in 2.0s (compile: 14ms, proxy.ts: 10ms, render: 2.0s)
+Γ£ô Compiled in 338ms
+ GET /generate 200 in 1161ms (compile: 165ms, proxy.ts: 920ms, render: 76ms)
+ POST /api/generate 200 in 9.6s (compile: 185ms, proxy.ts: 13ms, render: 9.4s)
+ POST /api/analyze 200 in 2.1s (compile: 119ms, proxy.ts: 27ms, render: 1940ms)
+Γ£ô Compiled in 273ms
+ POST /api/generate 200 in 19.0s (compile: 143ms, proxy.ts: 1119ms, render: 17.7s)
+Γ£ô Compiled in 308ms
+ POST /api/generate 200 in 41s (compile: 170ms, proxy.ts: 856ms, render: 40s)
+ POST /api/papers 201 in 2.7s (compile: 6ms, proxy.ts: 23ms, render: 2.7s)
+ GET /paper/1da757ba-4b44-4929-a108-82b1cd9415da 200 in 264ms (compile: 181ms, proxy.ts: 18ms, render: 65ms)
+ GET /api/papers/1da757ba-4b44-4929-a108-82b1cd9415da 200 in 475ms (compile: 81ms, proxy.ts: 22ms, render: 373ms)
+ GET /api/papers/1da757ba-4b44-4929-a108-82b1cd9415da 200 in 268ms (compile: 12ms, proxy.ts: 18ms, render: 237ms)
+Γ£ô Compiled in 400ms
+Γ£ô Compiled in 819ms
+ GET /generate 200 in 5.4s (compile: 411ms, proxy.ts: 4.6s, render: 452ms)
+ GET /generate 200 in 5.1s (compile: 257ms, proxy.ts: 4.2s, render: 631ms)
+ POST /generate 200 in 66ms (compile: 11ms, proxy.ts: 26ms, render: 29ms)
+Γ£ô Compiled in 249ms
+ GET /generate 200 in 98ms (compile: 18ms, proxy.ts: 21ms, render: 58ms)
+Γ£ô Compiled in 180ms
+ GET /generate 200 in 82ms (compile: 11ms, proxy.ts: 19ms, render: 52ms)
+Γ£ô Compiled in 189ms
+Γ£ô Compiled in 691ms
+Γ£ô Compiled in 273ms
+Γ£ô Compiled in 203ms
+Γ£ô Compiled in 314ms
+Γ£ô Compiled in 291ms
