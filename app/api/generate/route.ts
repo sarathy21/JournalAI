@@ -79,11 +79,17 @@ export async function POST(request: Request) {
             section.userPrompt,
           )
 
-          // The Nemotron model outputs thinking/reasoning text (plain text) before
-          // the actual HTML content. We strip it by:
-          // 1. Removing <think>...</think> blocks explicitly
-          // 2. Discarding everything before the first HTML tag (<h1, <h2, <p, <div, etc.)
-          //    since all paper content is HTML and all thinking is plain text
+          // The Nemotron model outputs thinking/reasoning text before the actual HTML.
+          // Thinking text mentions HTML tags mid-sentence ("use <p> tags", "begin with <h1>")
+          // which a simple tag-search would falsely match.
+          //
+          // KEY INSIGHT: Actual paper HTML always begins on its OWN LINE (after \n or at
+          // the very start of the response). Thinking prose NEVER starts a line with a tag.
+          // So we wait until an HTML tag appears at the beginning of a line.
+          //
+          // Pattern: tag must be preceded by \n (or be at position 0 of stripped content)
+          const LINE_START_HTML = /(^|\n)\s*<(h[1-6]|div|p|table|ul|ol|pre|section|article)\b/i
+
           let accumulated = ''
           let htmlStarted = false
 
@@ -92,29 +98,33 @@ export async function POST(request: Request) {
             if (!text) continue
 
             if (htmlStarted) {
-              // Already in HTML mode — strip any stray <think> blocks and stream
-              const clean = stripThinkBlocks(text)
-              if (clean) encode(clean)
+              // Already streaming HTML — pass through (think blocks already stripped at entry)
+              encode(text)
             } else {
               accumulated += text
               // Strip <think>...</think> blocks from accumulated buffer first
               const stripped = stripThinkBlocks(accumulated)
-              // Find first HTML tag — this marks start of actual paper content
-              const htmlIdx = stripped.search(/<(h[1-6]|div|p|table|ul|ol|pre|section)\b/i)
-              if (htmlIdx !== -1) {
+              // Only trigger when a tag is at the START OF A LINE
+              const match = LINE_START_HTML.exec(stripped)
+              if (match !== null) {
                 htmlStarted = true
-                encode(stripped.slice(htmlIdx))
+                // Find the index of the '<' in the match (skip the \n prefix)
+                const tagStart = stripped.indexOf('<', match.index)
+                encode(stripped.slice(tagStart))
                 accumulated = ''
               }
-              // If no HTML found yet, keep accumulating (discard thinking text)
+              // Keep accumulating until we get a line-starting HTML tag
             }
           }
 
-          // Flush any remaining content if HTML was never found (safety fallback)
+          // Safety fallback: if nothing was emitted, try line-start match on remainder
           if (!htmlStarted && accumulated) {
             const stripped = stripThinkBlocks(accumulated)
-            const htmlIdx = stripped.search(/<(h[1-6]|div|p|table|ul|ol|pre|section)\b/i)
-            if (htmlIdx !== -1) encode(stripped.slice(htmlIdx))
+            const match = LINE_START_HTML.exec(stripped)
+            if (match !== null) {
+              const tagStart = stripped.indexOf('<', match.index)
+              encode(stripped.slice(tagStart))
+            }
           }
 
           encode('\n')
