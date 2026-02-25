@@ -2,7 +2,6 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Sparkles,
@@ -12,7 +11,6 @@ import {
   Search,
   Shield,
   ArrowRight,
-  Zap,
   FileText,
   ChevronRight,
 } from 'lucide-react'
@@ -27,10 +25,6 @@ export default async function HomePage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_40%,hsl(var(--primary)/0.08),transparent)]" />
         <div className="mx-auto max-w-5xl px-4 pt-20 pb-24 sm:pt-28 sm:pb-32 text-center">
-          <Badge className="mb-6 gap-1.5 px-3 py-1.5 text-xs font-medium" variant="secondary">
-            <Zap className="h-3 w-3" />
-            Powered by Groq AI · Llama 3.3 70B
-          </Badge>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.1]">
             Academic Papers,{' '}
             <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
@@ -175,7 +169,7 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} JournalAI. Built with Next.js, Groq AI, and Supabase.</p>
+        <p>Created by sarathy s</p>
       </footer>
     </div>
   )

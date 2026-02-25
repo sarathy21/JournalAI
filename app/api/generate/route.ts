@@ -7,6 +7,16 @@ import { buildSectionPrompts } from '@/lib/prompts'
 // High quality, long context (65k tokens), excellent for academic paper generation
 const NVIDIA_MODEL = 'nvidia/llama-3.3-nemotron-super-49b-v1.5'
 
+/** Remove all <think>...</think> blocks from a string (Nemotron reasoning tokens) */
+function stripThinkBlocks(text: string): string {
+  // Remove complete think blocks
+  let result = text.replace(/<think>[\s\S]*?<\/think>/gi, '')
+  // Remove orphaned opening tag and everything after it (partial block at end of chunk)
+  const openIdx = result.lastIndexOf('<think>')
+  if (openIdx !== -1) result = result.slice(0, openIdx)
+  return result
+}
+
 /** Stream a single section via NVIDIA NIM API */
 async function createNvidiaStream(
   client: OpenAI,
@@ -68,11 +78,55 @@ export async function POST(request: Request) {
             section.systemMessage,
             section.userPrompt,
           )
+
+          // The Nemotron model outputs thinking/reasoning text before the actual HTML.
+          // Thinking text mentions HTML tags mid-sentence ("use <p> tags", "begin with <h1>")
+          // which a simple tag-search would falsely match.
+          //
+          // KEY INSIGHT: Actual paper HTML always begins on its OWN LINE (after \n or at
+          // the very start of the response). Thinking prose NEVER starts a line with a tag.
+          // So we wait until an HTML tag appears at the beginning of a line.
+          //
+          // Pattern: tag must be preceded by \n (or be at position 0 of stripped content)
+          const LINE_START_HTML = /(^|\n)\s*<(h[1-6]|div|p|table|ul|ol|pre|section|article)\b/i
+
+          let accumulated = ''
+          let htmlStarted = false
+
           for await (const chunk of stream) {
             const text = chunk.choices[0]?.delta?.content ?? ''
-            if (text) encode(text)
+            if (!text) continue
+
+            if (htmlStarted) {
+              // Already streaming HTML — pass through (think blocks already stripped at entry)
+              encode(text)
+            } else {
+              accumulated += text
+              // Strip <think>...</think> blocks from accumulated buffer first
+              const stripped = stripThinkBlocks(accumulated)
+              // Only trigger when a tag is at the START OF A LINE
+              const match = LINE_START_HTML.exec(stripped)
+              if (match !== null) {
+                htmlStarted = true
+                // Find the index of the '<' in the match (skip the \n prefix)
+                const tagStart = stripped.indexOf('<', match.index)
+                encode(stripped.slice(tagStart))
+                accumulated = ''
+              }
+              // Keep accumulating until we get a line-starting HTML tag
+            }
           }
-          // Small separator between sections for clean concatenation
+
+          // Safety fallback: if nothing was emitted, try line-start match on remainder
+          if (!htmlStarted && accumulated) {
+            const stripped = stripThinkBlocks(accumulated)
+            const match = LINE_START_HTML.exec(stripped)
+            if (match !== null) {
+              const tagStart = stripped.indexOf('<', match.index)
+              encode(stripped.slice(tagStart))
+            }
+          }
+
           encode('\n')
         }
       } catch (err) {
