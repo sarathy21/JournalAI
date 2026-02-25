@@ -30,15 +30,12 @@ const ieeetwocolumncss = `
   }
   .page-frame {
     border: 2pt solid #000;
-    border-top: 2pt solid #000;
-    border-bottom: 2pt solid #000;
-    border-left: 2pt solid #000;
-    border-right: 2pt solid #000;
     padding: 0.8cm;
     min-height: calc(100vh - 2cm);
     background: #fff;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
-  /* Title and author block - full width, centered above columns */
   .front-matter { 
     text-align: center; 
     margin-bottom: 1em;
@@ -161,13 +158,11 @@ const ieeeSingleColumnCss = `
   }
   .page-frame {
     border: 2pt solid #000;
-    border-top: 2pt solid #000;
-    border-bottom: 2pt solid #000;
-    border-left: 2pt solid #000;
-    border-right: 2pt solid #000;
     padding: 1cm;
     min-height: calc(100vh - 2cm);
     background: #fff;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   h1 { 
     font-size: 16pt; 
@@ -219,13 +214,11 @@ const apaFormatCss = `
   }
   .page-frame {
     border: 1.5pt solid #000;
-    border-top: 1.5pt solid #000;
-    border-bottom: 1.5pt solid #000;
-    border-left: 1.5pt solid #000;
-    border-right: 1.5pt solid #000;
     padding: 1.2cm;
     min-height: calc(100vh - 2cm);
     background: #fff;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   .running-head {
     font-size: 12pt;
@@ -278,14 +271,12 @@ const modernCleanCss = `
   }
   .page-frame {
     border: 3pt solid #2563eb;
-    border-top: 3pt solid #2563eb;
-    border-bottom: 3pt solid #2563eb;
-    border-left: 3pt solid #2563eb;
-    border-right: 3pt solid #2563eb;
     border-radius: 4pt;
     padding: 1.2cm;
     min-height: calc(100vh - 2cm);
     background: linear-gradient(to bottom, #f8fafc 0%, #fff 100px);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   h1 { 
     font-size: 22pt; 
@@ -369,13 +360,11 @@ const classicAcademicCss = `
   }
   .page-frame {
     border: double 4pt #000;
-    border-top: double 4pt #000;
-    border-bottom: double 4pt #000;
-    border-left: double 4pt #000;
-    border-right: double 4pt #000;
     padding: 1.5cm;
     min-height: calc(100vh - 2cm);
     background: #fffef7;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   h1 { 
     font-size: 20pt; 

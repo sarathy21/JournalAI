@@ -18,9 +18,39 @@ export interface SectionPrompt {
 }
 
 /**
- * Splits the paper into 6 focused section prompts so each Groq call
- * stays well within the model's practical token output limit.
- * Uses directive-style prompts (no inline placeholders) for reliable output.
+ * Detects the paper type from topic and domain to choose section structure.
+ * Returns 'empirical' (experiments/data), 'theoretical' (analysis/framework),
+ * or 'review' (survey/comparison).
+ */
+function detectPaperType(topic: string, domain: string): 'empirical' | 'theoretical' | 'review' {
+  const t = (topic + ' ' + domain).toLowerCase()
+
+  // Review/Survey papers
+  if (/\b(survey|review|systematic review|meta[- ]analysis|comparison of|comparative (study|analysis)|state[- ]of[- ]the[- ]art|bibliometric)\b/.test(t)) {
+    return 'review'
+  }
+
+  // Theoretical/Analytical papers (humanities, ethics, law, philosophy, history, policy, framework)
+  if (/\b(ethic|moral|philosophy|philosophical|legal|law|legislation|human rights|history|historical|literary|criticism|rhetoric|political theory|policy analysis|social theory|theology|aesthetics|cultural studies|hermeneutic|phenomenolog|epistemolog|ontolog)\b/.test(t)) {
+    return 'theoretical'
+  }
+
+  // Domain-based detection
+  const theoreticalDomains = /\b(philosophy|ethics|law|history|literature|political science|sociology|anthropology|religious studies|cultural studies|linguistics|art history|music theory|education theory)\b/i
+  if (theoreticalDomains.test(domain)) {
+    return 'theoretical'
+  }
+
+  // Default for STEM, business, etc.
+  return 'empirical'
+}
+
+/**
+ * Splits the paper into focused section prompts.
+ * Section structure adapts based on topic/domain type:
+ * - Empirical: Intro → Literature Review → Methodology → Results → Discussion → Conclusion
+ * - Theoretical: Intro → Background → Framework/Analysis → Critical Analysis → Implications → Conclusion
+ * - Review: Intro → Background → Systematic Review → Comparative Analysis → Synthesis → Conclusion
  */
 export function buildSectionPrompts(options: PaperOptions): SectionPrompt[] {
   const { topic, domain, citationStyle, wordCount, pageCount } = options
@@ -80,6 +110,29 @@ FORMAT RULES — follow every rule without exception:
 10. Each paragraph must be 120–200 words of substantive academic content.
 11. DO NOT stop early. Write the complete section until you reach the required word count.`
 
+  const paperType = detectPaperType(topic, domain)
+
+  // ─── Build sections based on paper type ────────────────────────────────
+  if (paperType === 'theoretical') {
+    return buildTheoreticalSections({ topic, domain, citationStyle, w, authorBlock, refCount, baseSystem })
+  }
+  if (paperType === 'review') {
+    return buildReviewSections({ topic, domain, citationStyle, w, authorBlock, refCount, baseSystem })
+  }
+  // Default: empirical
+  return buildEmpiricalSections({ topic, domain, citationStyle, w, authorBlock, refCount, baseSystem })
+}
+
+interface SectionBuildContext {
+  topic: string; domain: string; citationStyle: string
+  w: Record<string, number>; authorBlock: string; refCount: string; baseSystem: string
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// EMPIRICAL paper sections (STEM, data-driven, experimental)
+// ════════════════════════════════════════════════════════════════════════════
+function buildEmpiricalSections(ctx: SectionBuildContext): SectionPrompt[] {
+  const { topic, domain, citationStyle, w, authorBlock, refCount, baseSystem } = ctx
   return [
     // ── SECTION 1: Front Matter + Introduction ──────────────────────────
     {
@@ -323,6 +376,411 @@ Format: [N] A. B. Firstname Surname, C. D. Secondauthor, "Full title of the pape
 Make all references topically relevant to ${topic} in ${domain}. Use realistic but fictional author names, journal names, and DOIs.
 
 Write all content as real academic prose now. Begin with <h2>VI. CONCLUSION</h2>.`,
+      minWords: w.conclusion,
+    },
+  ]
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// THEORETICAL paper sections (humanities, ethics, law, philosophy, policy)
+// ════════════════════════════════════════════════════════════════════════════
+function buildTheoreticalSections(ctx: SectionBuildContext): SectionPrompt[] {
+  const { topic, domain, citationStyle, w, authorBlock, refCount, baseSystem } = ctx
+  return [
+    // Section 1: Front Matter + Introduction (same structure)
+    {
+      sectionName: 'Front Matter & Introduction',
+      systemMessage: `${baseSystem}\nWrite ONLY the front matter and introduction of the paper. Target: minimum ${w.intro + 400} words.`,
+      userPrompt: `Write the front matter and introduction section for an IEEE academic paper on the following topic:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+You must produce the following HTML elements IN ORDER:
+
+1. The paper title as: <h1>${topic}</h1>
+2. The author block exactly as:
+${authorBlock}
+3. Abstract section:
+<h2>Abstract</h2>
+Write a single paragraph of at least 250 words inside <p style="text-align:justify"><em>...</em></p>.
+Start with <strong>Abstract—</strong> inside the em tag.
+Cover: context, the specific issue in ${domain}, objectives, analytical approach, key arguments, and significance.
+
+4. Keywords: <p class="keywords"><strong>Keywords—</strong> 8–10 keywords for ${topic}</p>
+
+5. Introduction:
+<h2>I. INTRODUCTION</h2>
+Write at least 6 paragraphs (${w.intro} words min):
+Paragraph 1: Broad context of ${topic} in ${domain}.
+Paragraph 2: The central question, problem, or debate.
+Paragraph 3: Why existing scholarship is insufficient.
+Paragraph 4: The specific gap this paper addresses.
+Paragraph 5: Objectives, thesis statement, and analytical approach.
+Paragraph 6: Structure of the paper (Section II covers…, etc.).
+
+Begin with <h1>.`,
+      minWords: w.intro + 400,
+    },
+
+    // Section 2: Background & Context
+    {
+      sectionName: 'Background & Context',
+      systemMessage: `${baseSystem}\nWrite ONLY the Background & Context section. Target: minimum ${w.litRev} words.`,
+      userPrompt: `Write Section II (Background and Context) for an academic paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Begin with: <h2>II. BACKGROUND AND CONTEXT</h2>
+
+Then write three subsections:
+
+<h3>A. Historical Development and Key Concepts</h3>
+Write at least ${Math.round(w.litRev * 0.35)} words.
+Trace the historical evolution of ${topic}. Define key concepts, terms, and theoretical constructs. Reference foundational thinkers and seminal works (use [Author et al., Year] placeholders).
+
+<h3>B. Current Scholarly Discourse</h3>
+Write at least ${Math.round(w.litRev * 0.35)} words.
+Survey the current state of scholarship. Identify the major schools of thought, competing perspectives, and areas of consensus/disagreement. Use ${citationStyle} citations throughout.
+
+After this subsection, include:
+<p class="table-caption">Table I: Key Perspectives in the Literature</p>
+<table>
+  <thead><tr><th>Perspective/School</th><th>Key Proponents</th><th>Central Argument</th><th>Strengths</th><th>Limitations</th></tr></thead>
+  <tbody>(Write 5–7 rows)</tbody>
+</table>
+
+<h3>C. Gaps and Open Questions</h3>
+Write at least ${Math.round(w.litRev * 0.30)} words.
+Identify at least 3 unresolved questions or gaps in the existing literature that this paper addresses.
+
+Begin with <h2>II. BACKGROUND AND CONTEXT</h2>.`,
+      minWords: w.litRev,
+    },
+
+    // Section 3: Analytical Framework
+    {
+      sectionName: 'Analytical Framework',
+      systemMessage: `${baseSystem}\nWrite ONLY the Analytical Framework section. Target: minimum ${w.method} words.`,
+      userPrompt: `Write Section III (Analytical Framework) for an academic paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+
+Begin with: <h2>III. ANALYTICAL FRAMEWORK</h2>
+
+Write a 3-sentence overview of the analytical approach.
+
+Then include a conceptual diagram:
+<pre class="figure">
+Draw an ASCII diagram showing the analytical framework — key concepts, their relationships, and how they connect to the research questions. Use boxes and arrows.
+</pre>
+<p class="fig-caption">Fig. 1. Conceptual framework for analyzing ${topic}</p>
+
+Then write three subsections:
+
+<h3>A. Theoretical Foundations</h3>
+Write at least ${Math.round(w.method * 0.35)} words.
+Describe the theoretical lens(es) used in this analysis. Justify why these theories are appropriate for ${topic}.
+
+<h3>B. Analytical Approach and Criteria</h3>
+Write at least ${Math.round(w.method * 0.35)} words.
+Detail the criteria, dimensions, or categories used for analysis. Explain how arguments are evaluated, what evidence counts, and the standards applied.
+
+<h3>C. Scope, Limitations, and Ethical Considerations</h3>
+Write at least ${Math.round(w.method * 0.30)} words.
+Define the boundaries of the analysis. Acknowledge limitations of the approach. Discuss ethical dimensions relevant to ${topic}.
+
+Begin with <h2>III. ANALYTICAL FRAMEWORK</h2>.`,
+      minWords: w.method,
+    },
+
+    // Section 4: Analysis and Arguments
+    {
+      sectionName: 'Analysis and Arguments',
+      systemMessage: `${baseSystem}\nWrite ONLY the Analysis section. Target: minimum ${w.results} words.`,
+      userPrompt: `Write Section IV (Analysis and Arguments) for an academic paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+
+Begin with: <h2>IV. ANALYSIS AND ARGUMENTS</h2>
+
+Write a 3-sentence overview of the main arguments presented.
+
+Then write three subsections:
+
+<h3>A. Primary Analysis</h3>
+Write at least ${Math.round(w.results * 0.40)} words.
+Present the main analytical arguments. Examine the evidence, examples, case studies, or logical reasoning that supports each claim. Address counterarguments.
+
+After this subsection, include:
+<p class="table-caption">Table II: Comparative Analysis of Key Arguments</p>
+<table>
+  <thead><tr><th>Argument/Position</th><th>Supporting Evidence</th><th>Counterarguments</th><th>Assessment</th></tr></thead>
+  <tbody>(Write 5–7 rows)</tbody>
+</table>
+
+<h3>B. Secondary Dimensions and Nuances</h3>
+Write at least ${Math.round(w.results * 0.35)} words.
+Explore additional dimensions, edge cases, or complicating factors. Show the complexity and nuance of ${topic}.
+
+<h3>C. Synthesis of Arguments</h3>
+Write at least ${Math.round(w.results * 0.25)} words.
+Bring together the threads of analysis. What overall picture emerges? What is the paper's central contribution to understanding ${topic}?
+
+Begin with <h2>IV. ANALYSIS AND ARGUMENTS</h2>.`,
+      minWords: w.results,
+    },
+
+    // Section 5: Discussion and Implications
+    {
+      sectionName: 'Discussion & Implications',
+      systemMessage: `${baseSystem}\nWrite ONLY the Discussion section. Target: minimum ${w.discussion} words.`,
+      userPrompt: `Write Section V (Discussion and Implications) for an academic paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Begin with: <h2>V. DISCUSSION AND IMPLICATIONS</h2>
+
+Write a 3-sentence opening summarizing the key insights from the analysis.
+
+Then write three subsections:
+
+<h3>A. Significance of the Findings</h3>
+Write at least ${Math.round(w.discussion * 0.35)} words.
+Explain what the analysis reveals about ${topic}. Why do these insights matter? How do they change or deepen our understanding?
+
+<h3>B. Engagement with Existing Scholarship</h3>
+Write at least ${Math.round(w.discussion * 0.35)} words.
+Compare the paper's arguments with at least 6 existing works. Show where this paper agrees, disagrees, or extends prior scholarship. Use ${citationStyle} citations.
+
+<h3>C. Practical, Theoretical, and Policy Implications</h3>
+Write at least ${Math.round(w.discussion * 0.30)} words.
+(1) Theoretical: how the analysis advances theory in ${domain}.
+(2) Practical: actionable recommendations for practitioners or stakeholders.
+(3) Policy: recommendations for policymakers or institutions, if applicable.
+
+Begin with <h2>V. DISCUSSION AND IMPLICATIONS</h2>.`,
+      minWords: w.discussion,
+    },
+
+    // Section 6: Conclusion + References
+    {
+      sectionName: 'Conclusion & References',
+      systemMessage: `${baseSystem}\nWrite ONLY the Conclusion and References. Target: min ${w.conclusion} words for conclusion plus ${refCount} references.`,
+      userPrompt: `Write Section VI (Conclusion) and References for an academic paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Begin with: <h2>VI. CONCLUSION</h2>
+
+Write at least 5 paragraphs in <p style="text-align:justify"> tags:
+1. Restate the central question and why it matters.
+2. Summarize the analytical approach used.
+3. State the principal arguments and insights.
+4. Articulate contributions to ${domain}. Note limitations.
+5. Propose at least 3 future research directions.
+
+Minimum ${w.conclusion} words.
+
+Then: <h2>REFERENCES</h2>
+List ${refCount} references in IEEE format.
+Format: [N] A. Author, "Title," <em>Journal</em>, vol. XX, no. Y, pp. ZZZ–ZZZ, Year.
+Make references relevant to ${topic} in ${domain}.
+
+Begin with <h2>VI. CONCLUSION</h2>.`,
+      minWords: w.conclusion,
+    },
+  ]
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// REVIEW paper sections (survey, meta-analysis, comparative study)
+// ════════════════════════════════════════════════════════════════════════════
+function buildReviewSections(ctx: SectionBuildContext): SectionPrompt[] {
+  const { topic, domain, citationStyle, w, authorBlock, refCount, baseSystem } = ctx
+  return [
+    // Section 1: Front Matter + Introduction
+    {
+      sectionName: 'Front Matter & Introduction',
+      systemMessage: `${baseSystem}\nWrite ONLY the front matter and introduction. Target: minimum ${w.intro + 400} words.`,
+      userPrompt: `Write the front matter and introduction for an IEEE academic review/survey paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Produce IN ORDER:
+1. <h1>${topic}</h1>
+2. ${authorBlock}
+3. <h2>Abstract</h2> — 250+ word paragraph covering: motivation for the review, scope, search methodology, key findings from the literature, and significance.
+4. <p class="keywords"><strong>Keywords—</strong> 8–10 keywords</p>
+5. <h2>I. INTRODUCTION</h2> — 6+ paragraphs (${w.intro} words min):
+   - Why this review is needed
+   - Scope and boundaries
+   - Research questions guiding the review
+   - How this review differs from existing surveys
+   - Paper structure overview
+
+Begin with <h1>.`,
+      minWords: w.intro + 400,
+    },
+
+    // Section 2: Background
+    {
+      sectionName: 'Background',
+      systemMessage: `${baseSystem}\nWrite ONLY the Background section. Target: minimum ${w.litRev} words.`,
+      userPrompt: `Write Section II (Background) for a review paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Begin with: <h2>II. BACKGROUND</h2>
+
+<h3>A. Key Concepts and Definitions</h3>
+Write at least ${Math.round(w.litRev * 0.35)} words. Define all key terms, taxonomies, and conceptual models.
+
+<h3>B. Evolution of the Field</h3>
+Write at least ${Math.round(w.litRev * 0.35)} words. Trace how research on ${topic} has evolved over time. Identify major phases, turning points, and paradigm shifts.
+
+<h3>C. Review Methodology</h3>
+Write at least ${Math.round(w.litRev * 0.30)} words. Describe search strategy, databases used, inclusion/exclusion criteria, and the number of studies selected. Include:
+<p class="table-caption">Table I: Review Methodology Summary</p>
+<table>
+  <thead><tr><th>Criterion</th><th>Description</th></tr></thead>
+  <tbody>(Rows for: databases searched, search terms, date range, inclusion criteria, exclusion criteria, total studies screened, final studies included)</tbody>
+</table>
+
+Begin with <h2>II. BACKGROUND</h2>.`,
+      minWords: w.litRev,
+    },
+
+    // Section 3: Systematic Review
+    {
+      sectionName: 'Systematic Review of Literature',
+      systemMessage: `${baseSystem}\nWrite ONLY the Systematic Review section. Target: minimum ${w.method} words.`,
+      userPrompt: `Write Section III (Systematic Review of Literature) for a review paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+
+Begin with: <h2>III. SYSTEMATIC REVIEW OF LITERATURE</h2>
+
+<h3>A. Thematic Category 1</h3>
+Write at least ${Math.round(w.method * 0.35)} words. Group related studies by a major theme or approach. For each study describe: authors (placeholder), methodology, key findings, and limitations.
+
+<h3>B. Thematic Category 2</h3>
+Write at least ${Math.round(w.method * 0.35)} words. Second thematic grouping with the same detailed treatment.
+
+<h3>C. Thematic Category 3</h3>
+Write at least ${Math.round(w.method * 0.30)} words. Third thematic grouping.
+
+Include a summary table after thematic categories:
+<p class="table-caption">Table II: Summary of Reviewed Studies</p>
+<table>
+  <thead><tr><th>Study</th><th>Year</th><th>Method</th><th>Key Findings</th><th>Limitations</th></tr></thead>
+  <tbody>(Write 8–12 rows covering studies from all 3 categories)</tbody>
+</table>
+
+Begin with <h2>III. SYSTEMATIC REVIEW OF LITERATURE</h2>.`,
+      minWords: w.method,
+    },
+
+    // Section 4: Comparative Analysis
+    {
+      sectionName: 'Comparative Analysis',
+      systemMessage: `${baseSystem}\nWrite ONLY the Comparative Analysis section. Target: minimum ${w.results} words.`,
+      userPrompt: `Write Section IV (Comparative Analysis) for a review paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+
+Begin with: <h2>IV. COMPARATIVE ANALYSIS</h2>
+
+<h3>A. Cross-Study Comparisons</h3>
+Write at least ${Math.round(w.results * 0.40)} words.
+Compare the studies from Section III across dimensions: methodology, scale, findings, context. Identify areas of consensus and disagreement.
+
+Include a comparison chart:
+<pre class="figure">
+Create an ASCII chart comparing the key approaches or methods found in the reviewed studies. Show at least 5 dimensions of comparison.
+</pre>
+<p class="fig-caption">Fig. 1. Comparative overview of reviewed approaches</p>
+
+<h3>B. Trends and Patterns</h3>
+Write at least ${Math.round(w.results * 0.30)} words.
+Identify temporal trends, emerging methods, and shifting research focus areas.
+
+<h3>C. Strengths and Weaknesses of Existing Research</h3>
+Write at least ${Math.round(w.results * 0.30)} words.
+Synthesize the collective strengths and weaknesses of the reviewed body of work.
+
+Begin with <h2>IV. COMPARATIVE ANALYSIS</h2>.`,
+      minWords: w.results,
+    },
+
+    // Section 5: Discussion and Research Agenda
+    {
+      sectionName: 'Discussion & Research Agenda',
+      systemMessage: `${baseSystem}\nWrite ONLY the Discussion section. Target: minimum ${w.discussion} words.`,
+      userPrompt: `Write Section V (Discussion and Research Agenda) for a review paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Begin with: <h2>V. DISCUSSION AND RESEARCH AGENDA</h2>
+
+<h3>A. Key Insights from the Review</h3>
+Write at least ${Math.round(w.discussion * 0.35)} words.
+Summarize the most significant findings from the comparative analysis. What does the body of literature collectively reveal?
+
+<h3>B. Research Gaps and Future Directions</h3>
+Write at least ${Math.round(w.discussion * 0.35)} words.
+Identify at least 5 specific research gaps. For each, explain why it matters and propose concrete research questions for future work.
+
+<h3>C. Implications for Theory and Practice</h3>
+Write at least ${Math.round(w.discussion * 0.30)} words.
+Discuss what the review means for: (1) theory development, (2) practitioners, and (3) policymakers.
+
+Begin with <h2>V. DISCUSSION AND RESEARCH AGENDA</h2>.`,
+      minWords: w.discussion,
+    },
+
+    // Section 6: Conclusion + References
+    {
+      sectionName: 'Conclusion & References',
+      systemMessage: `${baseSystem}\nWrite ONLY the Conclusion and References. Target: min ${w.conclusion} words for conclusion plus ${refCount} references.`,
+      userPrompt: `Write Section VI (Conclusion) and References for a review paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Begin with: <h2>VI. CONCLUSION</h2>
+
+Write at least 5 paragraphs in <p style="text-align:justify"> tags:
+1. Restate the purpose and scope of the review.
+2. Summarize the review methodology.
+3. State the key findings and patterns discovered.
+4. Discuss contributions and limitations of this review.
+5. Propose a concrete research agenda with 3+ future directions.
+
+Minimum ${w.conclusion} words.
+
+Then: <h2>REFERENCES</h2>
+List ${refCount} references in IEEE format. Since this is a review paper, include MORE references (aim for the higher end).
+
+Begin with <h2>VI. CONCLUSION</h2>.`,
       minWords: w.conclusion,
     },
   ]

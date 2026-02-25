@@ -107,3 +107,44 @@ export async function deletePaper(id: string) {
 
   if (error) throw error
 }
+
+/**
+ * Ensure a Clerk user exists in the Supabase `users` table.
+ * Called on first access (dashboard / generate) so that users are stored
+ * even when the Clerk webhook cannot reach localhost during development.
+ */
+export async function syncUserToSupabase(clerkUser: {
+  id: string
+  email: string | null | undefined
+  firstName: string | null | undefined
+  lastName: string | null | undefined
+  imageUrl: string | null | undefined
+}) {
+  const supabase = getSupabaseAdmin()
+
+  // Check if user already exists
+  const { data: existing } = await supabase
+    .from('users')
+    .select('clerk_id')
+    .eq('clerk_id', clerkUser.id)
+    .maybeSingle()
+
+  if (existing) return // already synced
+
+  const { error } = await supabase.from('users').upsert(
+    {
+      clerk_id: clerkUser.id,
+      email: clerkUser.email ?? '',
+      first_name: clerkUser.firstName ?? '',
+      last_name: clerkUser.lastName ?? '',
+      avatar_url: clerkUser.imageUrl ?? '',
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'clerk_id' }
+  )
+
+  if (error) {
+    // Non-fatal — log but don't break the page
+    console.error('[syncUserToSupabase] Failed to sync user:', error.message)
+  }
+}
