@@ -68,11 +68,53 @@ export async function POST(request: Request) {
             section.systemMessage,
             section.userPrompt,
           )
+
+          // Buffer to strip <think>...</think> reasoning blocks from Nemotron
+          let buffer = ''
+          let insideThink = false
+
           for await (const chunk of stream) {
             const text = chunk.choices[0]?.delta?.content ?? ''
-            if (text) encode(text)
+            if (!text) continue
+
+            buffer += text
+
+            // Process buffer: strip all <think>...</think> blocks
+            while (true) {
+              if (insideThink) {
+                const endIdx = buffer.indexOf('</think>')
+                if (endIdx === -1) {
+                  // Still inside think block — discard all buffered content
+                  buffer = ''
+                  break
+                } else {
+                  // Found end of think block — discard up to and including </think>
+                  buffer = buffer.slice(endIdx + '</think>'.length)
+                  insideThink = false
+                }
+              } else {
+                const startIdx = buffer.indexOf('<think>')
+                if (startIdx === -1) {
+                  // No think block starting — flush all but last 7 chars (in case <think> is split)
+                  if (buffer.length > 7) {
+                    encode(buffer.slice(0, buffer.length - 7))
+                    buffer = buffer.slice(buffer.length - 7)
+                  }
+                  break
+                } else {
+                  // Found start of think block — flush content before it
+                  if (startIdx > 0) encode(buffer.slice(0, startIdx))
+                  buffer = buffer.slice(startIdx + '<think>'.length)
+                  insideThink = true
+                }
+              }
+            }
           }
-          // Small separator between sections for clean concatenation
+
+          // Flush remaining buffer (anything after last think block)
+          if (buffer && !insideThink) encode(buffer)
+
+          // Small separator between sections
           encode('\n')
         }
       } catch (err) {

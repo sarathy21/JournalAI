@@ -38,13 +38,32 @@ export async function savePaper(paper: {
   content: string
   format_template?: string
 }) {
+  // First try with format_template (requires column to exist in DB)
   const { data, error } = await getSupabaseAdmin()
     .from('papers')
     .insert(paper)
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    // If error is about missing column, retry without format_template
+    const isColumnError = error.message?.includes('format_template') ||
+      error.code === 'PGRST204' ||
+      error.message?.includes('column') ||
+      error.message?.includes('schema cache')
+
+    if (isColumnError && paper.format_template) {
+      const { format_template, ...paperWithoutFormat } = paper
+      const { data: data2, error: error2 } = await getSupabaseAdmin()
+        .from('papers')
+        .insert(paperWithoutFormat)
+        .select()
+        .single()
+      if (error2) throw error2
+      return data2
+    }
+    throw error
+  }
   return data
 }
 
