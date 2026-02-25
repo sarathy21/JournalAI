@@ -120,24 +120,36 @@ export default function PaperPage() {
         <head>
           <title>${paper?.title || 'Paper'}</title>
           <style>
-            @page { size: A4; margin: 0; }
+            @page { size: A4; margin: 1.5cm; }
             body {
               font-family: 'Times New Roman', serif;
-              font-size: 12pt;
-              line-height: 1.5;
+              font-size: 10pt;
+              line-height: 1.4;
               color: #000;
               background: #fff;
-              padding: 2.5cm 2.5cm 3cm 2.5cm;
+              padding: 1cm 1.2cm;
               margin: 0;
+              border: 2px solid #000;
+              min-height: calc(100vh - 3cm);
             }
-            h1 { font-size: 16pt; text-align: center; margin-bottom: 1em; font-weight: bold; }
-            h2 { font-size: 13pt; margin-top: 1.5em; margin-bottom: 0.5em; font-weight: bold; }
-            h3 { font-size: 12pt; margin-top: 1em; margin-bottom: 0.3em; font-weight: bold; font-style: italic; }
-            p { text-align: justify; margin: 0 0 0.8em 0; }
+            h1 { font-size: 16pt; text-align: center; margin: 0.3em 0 0.3em 0; font-weight: bold; text-transform: uppercase; }
+            h2 { font-size: 11pt; margin-top: 1.2em; margin-bottom: 0.4em; font-weight: bold; text-transform: uppercase; }
+            h3 { font-size: 10pt; margin-top: 0.8em; margin-bottom: 0.3em; font-weight: bold; font-style: italic; }
+            p { text-align: justify; margin: 0 0 0.6em 0; text-indent: 1.5em; }
             ul, ol { margin: 0.5em 0 0.5em 2em; }
             li { margin-bottom: 0.3em; }
             strong { font-weight: bold; }
             em { font-style: italic; }
+            .author-block { text-align: center; margin: 0.3em 0 1em 0; }
+            .author-name { font-size: 12pt; font-weight: bold; margin: 0; text-indent: 0; text-align: center; }
+            .author-detail { font-size: 9pt; font-style: italic; margin: 0; color: #333; text-indent: 0; text-align: center; }
+            .keywords { font-size: 9pt; margin: 0.5em 0 1em 0; text-indent: 0; }
+            table { width: 100%; border-collapse: collapse; margin: 0.6em 0; font-size: 9pt; }
+            table th, table td { border: 1px solid #000; padding: 4px 6px; text-align: left; vertical-align: top; }
+            table th { background: #f0f0f0; font-weight: bold; text-align: center; }
+            .table-caption { text-align: center; font-weight: bold; font-size: 9pt; margin: 0.8em 0 0.2em 0; font-variant: small-caps; text-indent: 0; }
+            pre.figure { background: #fafafa; border: 1px solid #999; padding: 0.8em; margin: 0.8em auto; max-width: 85%; font-family: 'Courier New', monospace; font-size: 8pt; line-height: 1.2; text-align: center; white-space: pre; overflow: visible; }
+            .fig-caption { text-align: center; font-style: italic; font-size: 9pt; margin: 0.2em 0 0.8em 0; text-indent: 0; }
           </style>
         </head>
         <body>${content}</body>

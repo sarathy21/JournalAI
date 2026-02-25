@@ -36,6 +36,7 @@ export async function savePaper(paper: {
   word_count_target: number
   page_count: number
   content: string
+  format_template?: string
 }) {
   const { data, error } = await getSupabaseAdmin()
     .from('papers')

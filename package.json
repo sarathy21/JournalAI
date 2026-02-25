@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.38.1",
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.97.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tiptap/extension-color": "^3.20.0",
@@ -31,6 +32,7 @@
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "svix": "^1.86.0",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
