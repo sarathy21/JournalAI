@@ -7,6 +7,16 @@ import { buildSectionPrompts } from '@/lib/prompts'
 // High quality, long context (65k tokens), excellent for academic paper generation
 const NVIDIA_MODEL = 'nvidia/llama-3.3-nemotron-super-49b-v1.5'
 
+/** Remove all <think>...</think> blocks from a string (Nemotron reasoning tokens) */
+function stripThinkBlocks(text: string): string {
+  // Remove complete think blocks
+  let result = text.replace(/<think>[\s\S]*?<\/think>/gi, '')
+  // Remove orphaned opening tag and everything after it (partial block at end of chunk)
+  const openIdx = result.lastIndexOf('<think>')
+  if (openIdx !== -1) result = result.slice(0, openIdx)
+  return result
+}
+
 /** Stream a single section via NVIDIA NIM API */
 async function createNvidiaStream(
   client: OpenAI,
@@ -69,52 +79,44 @@ export async function POST(request: Request) {
             section.userPrompt,
           )
 
-          // Buffer to strip <think>...</think> reasoning blocks from Nemotron
-          let buffer = ''
-          let insideThink = false
+          // The Nemotron model outputs thinking/reasoning text (plain text) before
+          // the actual HTML content. We strip it by:
+          // 1. Removing <think>...</think> blocks explicitly
+          // 2. Discarding everything before the first HTML tag (<h1, <h2, <p, <div, etc.)
+          //    since all paper content is HTML and all thinking is plain text
+          let accumulated = ''
+          let htmlStarted = false
 
           for await (const chunk of stream) {
             const text = chunk.choices[0]?.delta?.content ?? ''
             if (!text) continue
 
-            buffer += text
-
-            // Process buffer: strip all <think>...</think> blocks
-            while (true) {
-              if (insideThink) {
-                const endIdx = buffer.indexOf('</think>')
-                if (endIdx === -1) {
-                  // Still inside think block — discard all buffered content
-                  buffer = ''
-                  break
-                } else {
-                  // Found end of think block — discard up to and including </think>
-                  buffer = buffer.slice(endIdx + '</think>'.length)
-                  insideThink = false
-                }
-              } else {
-                const startIdx = buffer.indexOf('<think>')
-                if (startIdx === -1) {
-                  // No think block starting — flush all but last 7 chars (in case <think> is split)
-                  if (buffer.length > 7) {
-                    encode(buffer.slice(0, buffer.length - 7))
-                    buffer = buffer.slice(buffer.length - 7)
-                  }
-                  break
-                } else {
-                  // Found start of think block — flush content before it
-                  if (startIdx > 0) encode(buffer.slice(0, startIdx))
-                  buffer = buffer.slice(startIdx + '<think>'.length)
-                  insideThink = true
-                }
+            if (htmlStarted) {
+              // Already in HTML mode — strip any stray <think> blocks and stream
+              const clean = stripThinkBlocks(text)
+              if (clean) encode(clean)
+            } else {
+              accumulated += text
+              // Strip <think>...</think> blocks from accumulated buffer first
+              const stripped = stripThinkBlocks(accumulated)
+              // Find first HTML tag — this marks start of actual paper content
+              const htmlIdx = stripped.search(/<(h[1-6]|div|p|table|ul|ol|pre|section)\b/i)
+              if (htmlIdx !== -1) {
+                htmlStarted = true
+                encode(stripped.slice(htmlIdx))
+                accumulated = ''
               }
+              // If no HTML found yet, keep accumulating (discard thinking text)
             }
           }
 
-          // Flush remaining buffer (anything after last think block)
-          if (buffer && !insideThink) encode(buffer)
+          // Flush any remaining content if HTML was never found (safety fallback)
+          if (!htmlStarted && accumulated) {
+            const stripped = stripThinkBlocks(accumulated)
+            const htmlIdx = stripped.search(/<(h[1-6]|div|p|table|ul|ol|pre|section)\b/i)
+            if (htmlIdx !== -1) encode(stripped.slice(htmlIdx))
+          }
 
-          // Small separator between sections
           encode('\n')
         }
       } catch (err) {
