@@ -8,6 +8,7 @@ export interface Paper {
   word_count_target: number
   page_count: number
   content: string
+  format_template?: string
   created_at: string
   updated_at: string
 }

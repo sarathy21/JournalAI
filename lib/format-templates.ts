@@ -15,7 +15,7 @@ export interface FormatTemplate {
 const ieeetwocolumncss = `
   @page { 
     size: A4; 
-    margin: 1.5cm 1.5cm 2cm 1.5cm;
+    margin: 1cm;
     @top-center { content: counter(page); font-size: 10pt; }
   }
   * { box-sizing: border-box; }
@@ -30,8 +30,12 @@ const ieeetwocolumncss = `
   }
   .page-frame {
     border: 2pt solid #000;
+    border-top: 2pt solid #000;
+    border-bottom: 2pt solid #000;
+    border-left: 2pt solid #000;
+    border-right: 2pt solid #000;
     padding: 0.8cm;
-    min-height: calc(100vh - 3.5cm);
+    min-height: calc(100vh - 2cm);
     background: #fff;
   }
   /* Title and author block - full width, centered above columns */
@@ -142,7 +146,7 @@ const ieeetwocolumncss = `
 const ieeeSingleColumnCss = `
   @page { 
     size: A4; 
-    margin: 2cm;
+    margin: 1cm;
     @top-center { content: counter(page); font-size: 10pt; }
   }
   * { box-sizing: border-box; }
@@ -157,8 +161,12 @@ const ieeeSingleColumnCss = `
   }
   .page-frame {
     border: 2pt solid #000;
+    border-top: 2pt solid #000;
+    border-bottom: 2pt solid #000;
+    border-left: 2pt solid #000;
+    border-right: 2pt solid #000;
     padding: 1cm;
-    min-height: calc(100vh - 4cm);
+    min-height: calc(100vh - 2cm);
     background: #fff;
   }
   h1 { 
@@ -196,7 +204,7 @@ const ieeeSingleColumnCss = `
 const apaFormatCss = `
   @page { 
     size: A4; 
-    margin: 2.54cm; /* 1 inch margins */
+    margin: 1cm;
     @top-right { content: counter(page); font-size: 12pt; font-family: 'Times New Roman'; }
   }
   * { box-sizing: border-box; }
@@ -211,8 +219,12 @@ const apaFormatCss = `
   }
   .page-frame {
     border: 1.5pt solid #000;
+    border-top: 1.5pt solid #000;
+    border-bottom: 1.5pt solid #000;
+    border-left: 1.5pt solid #000;
+    border-right: 1.5pt solid #000;
     padding: 1.2cm;
-    min-height: calc(100vh - 5cm);
+    min-height: calc(100vh - 2cm);
     background: #fff;
   }
   .running-head {
@@ -252,7 +264,7 @@ const apaFormatCss = `
 const modernCleanCss = `
   @page { 
     size: A4; 
-    margin: 2cm;
+    margin: 1cm;
   }
   * { box-sizing: border-box; }
   body {
@@ -266,9 +278,13 @@ const modernCleanCss = `
   }
   .page-frame {
     border: 3pt solid #2563eb;
+    border-top: 3pt solid #2563eb;
+    border-bottom: 3pt solid #2563eb;
+    border-left: 3pt solid #2563eb;
+    border-right: 3pt solid #2563eb;
     border-radius: 4pt;
     padding: 1.2cm;
-    min-height: calc(100vh - 4cm);
+    min-height: calc(100vh - 2cm);
     background: linear-gradient(to bottom, #f8fafc 0%, #fff 100px);
   }
   h1 { 
@@ -338,7 +354,7 @@ const modernCleanCss = `
 const classicAcademicCss = `
   @page { 
     size: A4; 
-    margin: 2.5cm 2cm;
+    margin: 1cm;
     @bottom-center { content: "— " counter(page) " —"; font-size: 10pt; font-family: 'Georgia'; }
   }
   * { box-sizing: border-box; }
@@ -353,8 +369,12 @@ const classicAcademicCss = `
   }
   .page-frame {
     border: double 4pt #000;
+    border-top: double 4pt #000;
+    border-bottom: double 4pt #000;
+    border-left: double 4pt #000;
+    border-right: double 4pt #000;
     padding: 1.5cm;
-    min-height: calc(100vh - 5cm);
+    min-height: calc(100vh - 2cm);
     background: #fffef7;
   }
   h1 { 
