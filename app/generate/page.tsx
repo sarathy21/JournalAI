@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { GenerateForm } from '@/components/paper-form/GenerateForm'
 import { ContentAnalyzer } from '@/components/analyzer/ContentAnalyzer'
+import { FormatSelector, FormatSwitcher } from '@/components/format/FormatSelector'
+import { getFormatCss, wrapContentForFormat } from '@/lib/format-templates'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -15,8 +17,8 @@ import {
   Loader2,
   AlertCircle,
   X,
-  Sparkles,
   LetterText,
+  Palette,
 } from 'lucide-react'
 
 const TipTapEditor = dynamic(
@@ -36,12 +38,17 @@ export default function GeneratePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [paperContent, setPaperContent] = useState('')
   const [editedContent, setEditedContent] = useState('')
+  const [selectedFormat, setSelectedFormat] = useState('ieee-two-column')
   const [generationOptions, setGenerationOptions] = useState<{
     topic: string
     domain: string
     citationStyle: string
     wordCount: number
     pageCount: number
+    authorName: string
+    department: string
+    college: string
+    registerNumber: string
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [wordCount, setWordCount] = useState(0)
@@ -59,6 +66,10 @@ export default function GeneratePage() {
       citationStyle: string
       wordCount: number
       pageCount: number
+      authorName: string
+      department: string
+      college: string
+      registerNumber: string
     }) => {
       setIsGenerating(true)
       setError(null)
@@ -131,6 +142,7 @@ export default function GeneratePage() {
           word_count_target: generationOptions.wordCount,
           page_count: generationOptions.pageCount,
           content: editedContent,
+          format_template: selectedFormat,
         }),
       })
 
@@ -179,33 +191,21 @@ export default function GeneratePage() {
     const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : 'Paper'
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
+    
+    // Get CSS for selected format and wrap content appropriately
+    const formatCss = getFormatCss(selectedFormat)
+    const wrappedContent = wrapContentForFormat(editedContent, selectedFormat)
+    
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
           <title>${title}</title>
           <style>
-            @page { size: A4; margin: 0; }
-            body {
-              font-family: 'Times New Roman', serif;
-              font-size: 12pt;
-              line-height: 1.5;
-              color: #000;
-              background: #fff;
-              padding: 2.5cm 2.5cm 3cm 2.5cm;
-              margin: 0;
-            }
-            h1 { font-size: 16pt; text-align: center; margin-bottom: 1em; font-weight: bold; }
-            h2 { font-size: 13pt; margin-top: 1.5em; margin-bottom: 0.5em; font-weight: bold; }
-            h3 { font-size: 12pt; margin-top: 1em; margin-bottom: 0.3em; font-weight: bold; font-style: italic; }
-            p { text-align: justify; margin: 0 0 0.8em 0; }
-            ul, ol { margin: 0.5em 0 0.5em 2em; }
-            li { margin-bottom: 0.3em; }
-            strong { font-weight: bold; }
-            em { font-style: italic; }
+            ${formatCss}
           </style>
         </head>
-        <body>${editedContent}</body>
+        <body>${wrappedContent}</body>
       </html>
     `)
     printWindow.document.close()
@@ -229,6 +229,13 @@ export default function GeneratePage() {
 
         {/* Form */}
         <GenerateForm onGenerate={handleGenerate} isLoading={isGenerating} />
+
+        {/* Format Selection */}
+        <FormatSelector
+          selectedFormat={selectedFormat}
+          onFormatChange={setSelectedFormat}
+          showCard
+        />
 
         {/* Error */}
         {error && (
@@ -297,7 +304,7 @@ export default function GeneratePage() {
             {/* Actions bar */}
             {!isGenerating && paperContent && (
               <div className="flex items-center justify-between flex-wrap gap-3 py-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="gap-1 font-mono text-xs">
                     <LetterText className="h-3 w-3" />
                     {wordCount.toLocaleString()} words
@@ -313,6 +320,14 @@ export default function GeneratePage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
+                  {/* Format switcher */}
+                  <div className="hidden md:flex items-center gap-1 mr-2 border-r pr-3">
+                    <Palette className="h-3.5 w-3.5 text-muted-foreground" />
+                    <FormatSwitcher
+                      selectedFormat={selectedFormat}
+                      onFormatChange={setSelectedFormat}
+                    />
+                  </div>
                   <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-1.5 text-xs">
                     <FileDown className="h-3.5 w-3.5" />
                     PDF
@@ -347,28 +362,37 @@ export default function GeneratePage() {
 
             {/* Bottom actions */}
             {!isGenerating && paperContent && (
-              <div className="flex justify-end gap-2 pb-8">
-                <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-1.5">
-                  <FileDown className="h-4 w-4" />
-                  Export PDF
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleExportDocx} className="gap-1.5">
-                  <FileText className="h-4 w-4" />
-                  Export DOCX
-                </Button>
-                <Button onClick={handleSave} disabled={isSaving} className="gap-1.5 shadow-sm">
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4" />
-                      Save to Dashboard
-                    </>
-                  )}
-                </Button>
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pb-8">
+                {/* Mobile format selector */}
+                <div className="md:hidden">
+                  <FormatSelector
+                    selectedFormat={selectedFormat}
+                    onFormatChange={setSelectedFormat}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-1.5">
+                    <FileDown className="h-4 w-4" />
+                    Export PDF
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleExportDocx} className="gap-1.5">
+                    <FileText className="h-4 w-4" />
+                    Export DOCX
+                  </Button>
+                  <Button onClick={handleSave} disabled={isSaving} className="gap-1.5 shadow-sm">
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4" />
+                        Save to Dashboard
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             )}
           </div>

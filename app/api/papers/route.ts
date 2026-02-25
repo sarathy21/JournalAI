@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { title, topic, domain, citation_style, word_count_target, page_count, content } = body
+    const { title, topic, domain, citation_style, word_count_target, page_count, content, format_template } = body
 
     if (!title || !topic || !content) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
@@ -24,6 +24,7 @@ export async function POST(request: Request) {
       word_count_target: word_count_target || 2000,
       page_count: page_count || 10,
       content,
+      format_template: format_template || 'ieee-two-column',
     })
 
     return Response.json(paper, { status: 201 })

@@ -116,3 +116,28 @@ cache"
 Γ£ô Compiled in 203ms
 Γ£ô Compiled in 314ms
 Γ£ô Compiled in 291ms
+ GET / 200 in 1727ms (compile: 558ms, proxy.ts: 26ms, render: 1143ms)
+ POST / 200 in 75ms (compile: 18ms, proxy.ts: 29ms, render: 28ms)
+ GET /sign-up 200 in 838ms (compile: 655ms, proxy.ts: 28ms, render: 155ms)
+ GET /sign-up/SignUp_clerk_catchall_check_1771926122372 200 in 719ms (compile: 18ms, proxy.ts: 30ms, render: 671ms)
+ GET /dashboard 200 in 3.0s (compile: 771ms, proxy.ts: 40ms, render: 2.2s)
+ POST /dashboard 200 in 97ms (compile: 26ms, proxy.ts: 42ms, render: 29ms)
+ GET /generate 200 in 750ms (compile: 546ms, proxy.ts: 38ms, render: 166ms)
+ POST /api/generate 200 in 43s (compile: 838ms, proxy.ts: 75ms, render: 42s)
+ POST /api/analyze 200 in 3.0s (compile: 354ms, proxy.ts: 46ms, render: 2.6s)
+ POST /api/papers 201 in 2.9s (compile: 9ms, proxy.ts: 37ms, render: 2.9s)
+ GET /paper/d85d5817-a791-43c7-a8dc-3691a30b3fb9 200 in 868ms (compile: 651ms, proxy.ts: 22ms, render: 195ms)
+ GET /api/papers/d85d5817-a791-43c7-a8dc-3691a30b3fb9 200 in 526ms (compile: 67ms, proxy.ts: 55ms, render: 404ms)
+ GET /api/papers/d85d5817-a791-43c7-a8dc-3691a30b3fb9 200 in 819ms (compile: 16ms, proxy.ts: 98ms, render: 705ms)
+Γ£ô Compiled in 86ms
+ GET /generate 200 in 3.4s (compile: 10ms, proxy.ts: 3.3s, render: 125ms)
+ GET /paper/d85d5817-a791-43c7-a8dc-3691a30b3fb9 200 in 3.4s (compile: 81ms, proxy.ts: 3.3s, render: 57ms)
+Γ£ô Compiled in 68ms
+ GET /generate 200 in 111ms (compile: 7ms, proxy.ts: 15ms, render: 89ms)
+ GET /paper/d85d5817-a791-43c7-a8dc-3691a30b3fb9 200 in 114ms (compile: 64ms, proxy.ts: 15ms, render: 35ms)
+Γ£ô Compiled in 97ms
+ GET /generate 200 in 151ms (compile: 13ms, proxy.ts: 18ms, render: 120ms)
+ GET /paper/d85d5817-a791-43c7-a8dc-3691a30b3fb9 200 in 156ms (compile: 89ms, proxy.ts: 18ms, render: 48ms)
+Γ£ô Compiled in 121ms
+ GET /generate 200 in 194ms (compile: 11ms, proxy.ts: 25ms, render: 157ms)
+ GET /paper/d85d5817-a791-43c7-a8dc-3691a30b3fb9 200 in 199ms (compile: 86ms, proxy.ts: 24ms, render: 89ms)
