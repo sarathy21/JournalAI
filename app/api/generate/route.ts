@@ -1,56 +1,38 @@
-import Groq from 'groq-sdk'
+import OpenAI from 'openai'
 import { auth } from '@clerk/nextjs/server'
 import { buildSectionPrompts } from '@/lib/prompts'
 
-// Models in priority order — each has its own separate daily quota on Groq free tier:
-//   llama-3.3-70b-versatile : 100k TPD  (best quality, newest)
-//   llama3-70b-8192          : 500k TPD  (same 70B architecture, older release)
-//   llama-3.1-8b-instant     : 500k TPD  (fast 8B, lower quality but works)
-const MODEL_FALLBACKS = [
-  'llama-3.3-70b-versatile',
-  'llama3-70b-8192',
-  'llama-3.1-8b-instant',
-]
+// NVIDIA NIM API — OpenAI-compatible endpoint
+// Model: nvidia/llama-3.3-nemotron-super-49b-v1.5
+// High quality, long context (65k tokens), excellent for academic paper generation
+const NVIDIA_MODEL = 'nvidia/llama-3.3-nemotron-super-49b-v1.5'
 
-/** Attempt one streaming Groq call; on 429 or 503, throw a retryable error. */
-async function createStreamWithFallback(
-  client: Groq,
+/** Stream a single section via NVIDIA NIM API */
+async function createNvidiaStream(
+  client: OpenAI,
   sectionSystemMessage: string,
   sectionUserPrompt: string,
-): Promise<AsyncIterable<Groq.Chat.Completions.ChatCompletionChunk>> {
-  let lastErr: unknown
-  for (const model of MODEL_FALLBACKS) {
-    try {
-      const stream = await client.chat.completions.create({
-        model,
-        max_tokens: 8192,
-        stream: true,
-        temperature: 0.4,
-        top_p: 0.9,
-        messages: [
-          { role: 'system', content: sectionSystemMessage },
-          { role: 'user',   content: sectionUserPrompt },
-        ],
-      })
-      return stream
-    } catch (err: unknown) {
-      const status = (err as { status?: number })?.status
-      const code   = (err as { error?: { code?: string } })?.error?.code
-      const isRateLimit = status === 429 || code === 'rate_limit_exceeded'
-      const isOverload  = status === 503
-      if (isRateLimit || isOverload) {
-        console.warn(`Model ${model} rate-limited (${status}), trying next fallback…`)
-        lastErr = err
-        continue
-      }
-      throw err // non-retryable error — bubble up immediately
-    }
-  }
-  throw lastErr // all models exhausted
+) {
+  return client.chat.completions.create({
+    model: NVIDIA_MODEL,
+    messages: [
+      { role: 'system', content: sectionSystemMessage },
+      { role: 'user',   content: sectionUserPrompt },
+    ],
+    temperature: 0.6,
+    top_p: 0.95,
+    max_tokens: 65536,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    stream: true,
+  })
 }
 
 export async function POST(request: Request) {
-  const client = new Groq({ apiKey: process.env.GROQ_API_KEY })
+  const client = new OpenAI({
+    baseURL: 'https://integrate.api.nvidia.com/v1',
+    apiKey: process.env.NVIDIA_API_KEY,
+  })
   const { userId } = await auth()
   if (!userId) {
     return new Response('Unauthorized', { status: 401 })
@@ -81,13 +63,13 @@ export async function POST(request: Request) {
       const encode = (t: string) => controller.enqueue(new TextEncoder().encode(t))
       try {
         for (const section of sections) {
-          const stream = await createStreamWithFallback(
+          const stream = await createNvidiaStream(
             client,
             section.systemMessage,
             section.userPrompt,
           )
           for await (const chunk of stream) {
-            const text = (chunk as Groq.Chat.Completions.ChatCompletionChunk).choices[0]?.delta?.content ?? ''
+            const text = chunk.choices[0]?.delta?.content ?? ''
             if (text) encode(text)
           }
           // Small separator between sections for clean concatenation
