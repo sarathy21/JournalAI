@@ -108,7 +108,8 @@ FORMAT RULES — follow every rule without exception:
 8. ASCII diagrams: <pre class="figure">...</pre> then <p class="fig-caption">Fig. N. Caption</p>
 9. Citations in IEEE style: [1], [2], [1]–[4]
 10. Each paragraph must be 120–200 words of substantive academic content.
-11. DO NOT stop early. Write the complete section until you reach the required word count.`
+11. MANDATORY WORD COUNT: Every section system message specifies the minimum word count. YOU MUST reach that word count before stopping. If you run out of obvious content, add more analysis, examples, comparisons, or implications paragraphs. Do NOT stop early under any circumstances. Your output is automatically word-counted and sections below the minimum will be marked incomplete.
+12. When you think you are done — check if you have reached the minimum. If not, write more <p> paragraphs with deeper analysis until you do.`
 
   const paperType = detectPaperType(topic, domain)
 

@@ -17,27 +17,6 @@ function stripThinkBlocks(text: string): string {
   return result
 }
 
-/** Stream a single section via NVIDIA NIM API */
-async function createNvidiaStream(
-  client: OpenAI,
-  sectionSystemMessage: string,
-  sectionUserPrompt: string,
-) {
-  return client.chat.completions.create({
-    model: NVIDIA_MODEL,
-    messages: [
-      { role: 'system', content: sectionSystemMessage },
-      { role: 'user',   content: sectionUserPrompt },
-    ],
-    temperature: 0.6,
-    top_p: 0.95,
-    max_tokens: 65536,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-    stream: true,
-  })
-}
-
 export async function POST(request: Request) {
   const client = new OpenAI({
     baseURL: 'https://integrate.api.nvidia.com/v1',
@@ -67,64 +46,114 @@ export async function POST(request: Request) {
     registerNumber: registerNumber || undefined,
   })
 
+  /** Rough word count from an HTML string (strips tags first) */
+  function countWords(html: string): number {
+    return html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length
+  }
+
+  /** Stream a single NVIDIA call into the controller, returning all emitted HTML */
+  async function streamSection(
+    sysMsg: string,
+    userMsg: string,
+    encode: (t: string) => void,
+    assistantContext?: string,
+  ): Promise<string> {
+    const LINE_START_HTML = /(^|\n)\s*<(h[1-6]|div|p|table|ul|ol|pre|section|article)\b/i
+    let accumulated = ''
+    let htmlStarted = false
+    let emitted = ''
+
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: sysMsg },
+      { role: 'user',   content: userMsg },
+    ]
+    if (assistantContext) {
+      messages.push({ role: 'assistant', content: assistantContext })
+      messages.push({
+        role: 'user',
+        content:
+          'Continue writing now. Do NOT output any new <h2> section headings. ' +
+          'Do NOT repeat content already written. ' +
+          'Begin immediately with the next <p> paragraph and keep writing until you reach the required word count.',
+      })
+    }
+
+    const stream = await client.chat.completions.create({
+      model: NVIDIA_MODEL,
+      messages,
+      temperature: 0.6,
+      top_p: 0.95,
+      max_tokens: 65536,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      stream: true,
+    })
+
+    for await (const chunk of stream) {
+      const text = chunk.choices[0]?.delta?.content ?? ''
+      if (!text) continue
+
+      if (htmlStarted) {
+        encode(text)
+        emitted += text
+      } else {
+        accumulated += text
+        const stripped = stripThinkBlocks(accumulated)
+        const match = LINE_START_HTML.exec(stripped)
+        if (match !== null) {
+          htmlStarted = true
+          const tagStart = stripped.indexOf('<', match.index)
+          const html = stripped.slice(tagStart)
+          encode(html)
+          emitted += html
+          accumulated = ''
+        }
+      }
+    }
+
+    // Safety fallback
+    if (!htmlStarted && accumulated) {
+      const stripped = stripThinkBlocks(accumulated)
+      const match = LINE_START_HTML.exec(stripped)
+      if (match !== null) {
+        const tagStart = stripped.indexOf('<', match.index)
+        const html = stripped.slice(tagStart)
+        encode(html)
+        emitted += html
+      }
+    }
+
+    return emitted
+  }
+
   // Stream all sections sequentially in one ReadableStream
   const readable = new ReadableStream({
     async start(controller) {
       const encode = (t: string) => controller.enqueue(new TextEncoder().encode(t))
       try {
         for (const section of sections) {
-          const stream = await createNvidiaStream(
-            client,
+          // First pass
+          let sectionHTML = await streamSection(
             section.systemMessage,
             section.userPrompt,
+            encode,
           )
 
-          // The Nemotron model outputs thinking/reasoning text before the actual HTML.
-          // Thinking text mentions HTML tags mid-sentence ("use <p> tags", "begin with <h1>")
-          // which a simple tag-search would falsely match.
-          //
-          // KEY INSIGHT: Actual paper HTML always begins on its OWN LINE (after \n or at
-          // the very start of the response). Thinking prose NEVER starts a line with a tag.
-          // So we wait until an HTML tag appears at the beginning of a line.
-          //
-          // Pattern: tag must be preceded by \n (or be at position 0 of stripped content)
-          const LINE_START_HTML = /(^|\n)\s*<(h[1-6]|div|p|table|ul|ol|pre|section|article)\b/i
-
-          let accumulated = ''
-          let htmlStarted = false
-
-          for await (const chunk of stream) {
-            const text = chunk.choices[0]?.delta?.content ?? ''
-            if (!text) continue
-
-            if (htmlStarted) {
-              // Already streaming HTML — pass through (think blocks already stripped at entry)
-              encode(text)
-            } else {
-              accumulated += text
-              // Strip <think>...</think> blocks from accumulated buffer first
-              const stripped = stripThinkBlocks(accumulated)
-              // Only trigger when a tag is at the START OF A LINE
-              const match = LINE_START_HTML.exec(stripped)
-              if (match !== null) {
-                htmlStarted = true
-                // Find the index of the '<' in the match (skip the \n prefix)
-                const tagStart = stripped.indexOf('<', match.index)
-                encode(stripped.slice(tagStart))
-                accumulated = ''
-              }
-              // Keep accumulating until we get a line-starting HTML tag
-            }
-          }
-
-          // Safety fallback: if nothing was emitted, try line-start match on remainder
-          if (!htmlStarted && accumulated) {
-            const stripped = stripThinkBlocks(accumulated)
-            const match = LINE_START_HTML.exec(stripped)
-            if (match !== null) {
-              const tagStart = stripped.indexOf('<', match.index)
-              encode(stripped.slice(tagStart))
-            }
+          // Continuation pass: if output is below 80% of the target, ask the model to keep going
+          const words = countWords(sectionHTML)
+          const target = section.minWords
+          if (words < target * 0.80) {
+            const continuationSys =
+              section.systemMessage +
+              `\n\nCRITICAL: You only wrote approximately ${words} words but this section requires ${target} words minimum. ` +
+              `You need at least ${target - words} more words. Continue writing now.`
+            const extra = await streamSection(
+              continuationSys,
+              section.userPrompt,
+              encode,
+              sectionHTML,
+            )
+            sectionHTML += extra
           }
 
           encode('\n')
