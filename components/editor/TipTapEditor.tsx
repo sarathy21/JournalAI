@@ -7,7 +7,11 @@ import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import Highlight from '@tiptap/extension-highlight'
-import { useEffect, useCallback } from 'react'
+import { Table } from '@tiptap/extension-table'
+import { TableRow } from '@tiptap/extension-table-row'
+import { TableHeader } from '@tiptap/extension-table-header'
+import { TableCell } from '@tiptap/extension-table-cell'
+import { useEffect, useCallback, useRef } from 'react'
 import {
   Bold,
   Italic,
@@ -72,6 +76,9 @@ function ToolSep() {
 }
 
 export function TipTapEditor({ content, onChange }: TipTapEditorProps) {
+  // Track whether content is being set externally to avoid cursor-jump loop
+  const isExternalUpdate = useRef(false)
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -81,22 +88,35 @@ export function TipTapEditor({ content, onChange }: TipTapEditorProps) {
       Color,
       Highlight.configure({ multicolor: true }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML())
+      if (!isExternalUpdate.current) {
+        onChange?.(editor.getHTML())
+      }
     },
     editorProps: {
       attributes: {
         class:
-          'prose prose-slate max-w-none min-h-[600px] p-8 focus:outline-none bg-white rounded-b-lg',
+          'prose prose-slate max-w-none min-h-[600px] p-8 focus:outline-none bg-white rounded-b-lg [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-gray-300 [&_th]:bg-gray-100 [&_th]:p-2 [&_th]:text-left [&_td]:border [&_td]:border-gray-300 [&_td]:p-2',
       },
     },
   })
 
+  // Only update editor content when the prop changes from outside (e.g., streaming)
+  // Skip if the editor itself triggered the change (prevents cursor jump)
   useEffect(() => {
     if (editor && content) {
-      editor.commands.setContent(content)
+      const currentContent = editor.getHTML()
+      if (currentContent !== content) {
+        isExternalUpdate.current = true
+        editor.commands.setContent(content, { emitUpdate: false })
+        isExternalUpdate.current = false
+      }
     }
   }, [content, editor])
 

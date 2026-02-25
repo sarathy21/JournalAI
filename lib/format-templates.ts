@@ -15,7 +15,7 @@ export interface FormatTemplate {
 const ieeetwocolumncss = `
   @page { 
     size: A4; 
-    margin: 1.5cm 1.5cm 2cm 1.5cm;
+    margin: 1cm;
     @top-center { content: counter(page); font-size: 10pt; }
   }
   * { box-sizing: border-box; }
@@ -31,10 +31,11 @@ const ieeetwocolumncss = `
   .page-frame {
     border: 2pt solid #000;
     padding: 0.8cm;
-    min-height: calc(100vh - 3.5cm);
+    min-height: calc(100vh - 2cm);
     background: #fff;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
-  /* Title and author block - full width, centered above columns */
   .front-matter { 
     text-align: center; 
     margin-bottom: 1em;
@@ -142,7 +143,7 @@ const ieeetwocolumncss = `
 const ieeeSingleColumnCss = `
   @page { 
     size: A4; 
-    margin: 2cm;
+    margin: 1cm;
     @top-center { content: counter(page); font-size: 10pt; }
   }
   * { box-sizing: border-box; }
@@ -158,8 +159,10 @@ const ieeeSingleColumnCss = `
   .page-frame {
     border: 2pt solid #000;
     padding: 1cm;
-    min-height: calc(100vh - 4cm);
+    min-height: calc(100vh - 2cm);
     background: #fff;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   h1 { 
     font-size: 16pt; 
@@ -196,7 +199,7 @@ const ieeeSingleColumnCss = `
 const apaFormatCss = `
   @page { 
     size: A4; 
-    margin: 2.54cm; /* 1 inch margins */
+    margin: 1cm;
     @top-right { content: counter(page); font-size: 12pt; font-family: 'Times New Roman'; }
   }
   * { box-sizing: border-box; }
@@ -212,8 +215,10 @@ const apaFormatCss = `
   .page-frame {
     border: 1.5pt solid #000;
     padding: 1.2cm;
-    min-height: calc(100vh - 5cm);
+    min-height: calc(100vh - 2cm);
     background: #fff;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   .running-head {
     font-size: 12pt;
@@ -252,7 +257,7 @@ const apaFormatCss = `
 const modernCleanCss = `
   @page { 
     size: A4; 
-    margin: 2cm;
+    margin: 1cm;
   }
   * { box-sizing: border-box; }
   body {
@@ -268,8 +273,10 @@ const modernCleanCss = `
     border: 3pt solid #2563eb;
     border-radius: 4pt;
     padding: 1.2cm;
-    min-height: calc(100vh - 4cm);
+    min-height: calc(100vh - 2cm);
     background: linear-gradient(to bottom, #f8fafc 0%, #fff 100px);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   h1 { 
     font-size: 22pt; 
@@ -338,7 +345,7 @@ const modernCleanCss = `
 const classicAcademicCss = `
   @page { 
     size: A4; 
-    margin: 2.5cm 2cm;
+    margin: 1cm;
     @bottom-center { content: "— " counter(page) " —"; font-size: 10pt; font-family: 'Georgia'; }
   }
   * { box-sizing: border-box; }
@@ -354,8 +361,10 @@ const classicAcademicCss = `
   .page-frame {
     border: double 4pt #000;
     padding: 1.5cm;
-    min-height: calc(100vh - 5cm);
+    min-height: calc(100vh - 2cm);
     background: #fffef7;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   h1 { 
     font-size: 20pt; 

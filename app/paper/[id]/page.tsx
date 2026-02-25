@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { ContentAnalyzer } from '@/components/analyzer/ContentAnalyzer'
+import { getFormatCss, wrapContentForFormat } from '@/lib/format-templates'
+import { FormatSwitcher } from '@/components/format/FormatSelector'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -16,6 +18,7 @@ import {
   Trash2,
   Calendar,
   Check,
+  Palette,
 } from 'lucide-react'
 import type { Paper } from '@/types'
 
@@ -38,6 +41,7 @@ export default function PaperPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedFormat, setSelectedFormat] = useState('ieee-two-column')
 
   useEffect(() => {
     const fetchPaper = async () => {
@@ -47,6 +51,10 @@ export default function PaperPage() {
         const data = await res.json()
         setPaper(data)
         setContent(data.content)
+        // Restore the format template used when the paper was saved
+        if (data.format_template) {
+          setSelectedFormat(data.format_template)
+        }
       } catch (e) {
         setError('Could not load paper.')
         console.error(e)
@@ -114,45 +122,21 @@ export default function PaperPage() {
     if (!content) return
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
+
+    // Use the saved format template CSS and content wrapping
+    const formatCss = getFormatCss(selectedFormat)
+    const wrappedContent = wrapContentForFormat(content, selectedFormat)
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
           <title>${paper?.title || 'Paper'}</title>
           <style>
-            @page { size: A4; margin: 1.5cm; }
-            body {
-              font-family: 'Times New Roman', serif;
-              font-size: 10pt;
-              line-height: 1.4;
-              color: #000;
-              background: #fff;
-              padding: 1cm 1.2cm;
-              margin: 0;
-              border: 2px solid #000;
-              min-height: calc(100vh - 3cm);
-            }
-            h1 { font-size: 16pt; text-align: center; margin: 0.3em 0 0.3em 0; font-weight: bold; text-transform: uppercase; }
-            h2 { font-size: 11pt; margin-top: 1.2em; margin-bottom: 0.4em; font-weight: bold; text-transform: uppercase; }
-            h3 { font-size: 10pt; margin-top: 0.8em; margin-bottom: 0.3em; font-weight: bold; font-style: italic; }
-            p { text-align: justify; margin: 0 0 0.6em 0; text-indent: 1.5em; }
-            ul, ol { margin: 0.5em 0 0.5em 2em; }
-            li { margin-bottom: 0.3em; }
-            strong { font-weight: bold; }
-            em { font-style: italic; }
-            .author-block { text-align: center; margin: 0.3em 0 1em 0; }
-            .author-name { font-size: 12pt; font-weight: bold; margin: 0; text-indent: 0; text-align: center; }
-            .author-detail { font-size: 9pt; font-style: italic; margin: 0; color: #333; text-indent: 0; text-align: center; }
-            .keywords { font-size: 9pt; margin: 0.5em 0 1em 0; text-indent: 0; }
-            table { width: 100%; border-collapse: collapse; margin: 0.6em 0; font-size: 9pt; }
-            table th, table td { border: 1px solid #000; padding: 4px 6px; text-align: left; vertical-align: top; }
-            table th { background: #f0f0f0; font-weight: bold; text-align: center; }
-            .table-caption { text-align: center; font-weight: bold; font-size: 9pt; margin: 0.8em 0 0.2em 0; font-variant: small-caps; text-indent: 0; }
-            pre.figure { background: #fafafa; border: 1px solid #999; padding: 0.8em; margin: 0.8em auto; max-width: 85%; font-family: 'Courier New', monospace; font-size: 8pt; line-height: 1.2; text-align: center; white-space: pre; overflow: visible; }
-            .fig-caption { text-align: center; font-style: italic; font-size: 9pt; margin: 0.2em 0 0.8em 0; text-indent: 0; }
+            ${formatCss}
           </style>
         </head>
-        <body>${content}</body>
+        <body>${wrappedContent}</body>
       </html>
     `)
     printWindow.document.close()
@@ -228,6 +212,13 @@ export default function PaperPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <div className="hidden md:flex items-center gap-1 mr-2 border-r pr-3">
+              <Palette className="h-3.5 w-3.5 text-muted-foreground" />
+              <FormatSwitcher
+                selectedFormat={selectedFormat}
+                onFormatChange={setSelectedFormat}
+              />
+            </div>
             <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-1.5 text-xs">
               <FileDown className="h-3.5 w-3.5" />
               PDF

@@ -1,7 +1,7 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { getUserPapers } from '@/lib/supabase'
+import { getUserPapers, syncUserToSupabase } from '@/lib/supabase'
 import { PaperCard } from '@/components/dashboard/PaperCard'
 import { Button } from '@/components/ui/button'
 import { Plus, FileText, AlertCircle } from 'lucide-react'
@@ -10,6 +10,18 @@ import type { Paper } from '@/types'
 export default async function DashboardPage() {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
+
+  // Ensure user exists in Supabase (covers first-time registration & dev mode)
+  const user = await currentUser()
+  if (user) {
+    await syncUserToSupabase({
+      id: user.id,
+      email: user.emailAddresses?.[0]?.emailAddress,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      imageUrl: user.imageUrl,
+    })
+  }
 
   let papers: Paper[] = []
   let error: string | null = null
