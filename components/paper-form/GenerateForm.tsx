@@ -15,7 +15,7 @@ import { Slider } from '@/components/ui/slider'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Sparkles, Loader2, FileText, BookOpen, GraduationCap, User, Building2, Hash } from 'lucide-react'
+import { Sparkles, Loader2, FileText, BookOpen, GraduationCap, User, Building2, Hash, Plus, X, Lightbulb } from 'lucide-react'
 
 interface GenerateFormProps {
   onGenerate: (options: {
@@ -24,10 +24,11 @@ interface GenerateFormProps {
     citationStyle: string
     wordCount: number
     pageCount: number
-    authorName: string
+    authors: { name: string; registerNumber: string }[]
+    affiliation: string
     department: string
     college: string
-    registerNumber: string
+    proposedIdea: string
   }) => void
   isLoading: boolean
 }
@@ -39,17 +40,40 @@ export function GenerateForm({ onGenerate, isLoading }: GenerateFormProps) {
   const [citationStyle, setCitationStyle] = useState('IEEE')
   const [pageCount, setPageCount] = useState(10)
 
-  // Author info
-  const [authorName, setAuthorName] = useState('')
+  // Authors (at least 1, up to 4)
+  const [authors, setAuthors] = useState<{ name: string; registerNumber: string }[]>([
+    { name: '', registerNumber: '' },
+  ])
+  const [affiliation, setAffiliation] = useState('')
   const [department, setDepartment] = useState('')
   const [college, setCollege] = useState('')
-  const [registerNumber, setRegisterNumber] = useState('')
 
-  const wordCount = pageCount * 600
+  // Proposed system idea
+  const [proposedIdea, setProposedIdea] = useState('')
+
+  const wordCount = pageCount * 850
+
+  const addAuthor = () => {
+    if (authors.length < 4) {
+      setAuthors([...authors, { name: '', registerNumber: '' }])
+    }
+  }
+
+  const removeAuthor = (idx: number) => {
+    if (authors.length > 1) {
+      setAuthors(authors.filter((_, i) => i !== idx))
+    }
+  }
+
+  const updateAuthor = (idx: number, field: 'name' | 'registerNumber', value: string) => {
+    const updated = [...authors]
+    updated[idx] = { ...updated[idx], [field]: value }
+    setAuthors(updated)
+  }
 
   const handleSubmit = () => {
     if (!topic.trim() || topic.trim().length < 5) return
-    if (!authorName.trim()) return
+    if (!authors[0].name.trim()) return
     const fullTopic = description.trim()
       ? `${topic.trim()}. Additional details: ${description.trim()}`
       : topic.trim()
@@ -59,10 +83,11 @@ export function GenerateForm({ onGenerate, isLoading }: GenerateFormProps) {
       citationStyle,
       wordCount,
       pageCount,
-      authorName: authorName.trim(),
+      authors: authors.filter(a => a.name.trim()),
+      affiliation: affiliation.trim(),
       department: department.trim(),
       college: college.trim(),
-      registerNumber: registerNumber.trim(),
+      proposedIdea: proposedIdea.trim(),
     })
   }
 
@@ -82,44 +107,66 @@ export function GenerateForm({ onGenerate, isLoading }: GenerateFormProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        {/* Author Information */}
+        {/* Authors */}
         <div className="space-y-3 p-4 rounded-lg border bg-muted/30">
-          <Label className="text-sm font-semibold flex items-center gap-1.5">
-            <User className="h-4 w-4 text-primary" />
-            Author Information
-          </Label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="authorName" className="text-xs text-muted-foreground">
-                Full Name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="authorName"
-                placeholder="e.g. John Doe"
-                value={authorName}
-                onChange={(e) => setAuthorName(e.target.value)}
-                className="h-9"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="registerNumber" className="text-xs text-muted-foreground">
-                Register Number
-              </Label>
-              <div className="relative">
-                <Hash className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-semibold flex items-center gap-1.5">
+              <User className="h-4 w-4 text-primary" />
+              Authors
+            </Label>
+            {authors.length < 4 && (
+              <Button type="button" variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={addAuthor}>
+                <Plus className="h-3 w-3" /> Add Author
+              </Button>
+            )}
+          </div>
+          {authors.map((author, idx) => (
+            <div key={idx} className="flex items-end gap-2">
+              <div className="flex-1 space-y-1.5">
+                <Label htmlFor={`author-${idx}`} className="text-xs text-muted-foreground">
+                  Author {idx + 1} {idx === 0 && <span className="text-destructive">*</span>}
+                </Label>
                 <Input
-                  id="registerNumber"
-                  placeholder="e.g. 2021CS1234"
-                  value={registerNumber}
-                  onChange={(e) => setRegisterNumber(e.target.value)}
-                  className="h-9 pl-8"
+                  id={`author-${idx}`}
+                  placeholder="Full Name"
+                  value={author.name}
+                  onChange={(e) => updateAuthor(idx, 'name', e.target.value)}
+                  className="h-9"
                 />
               </div>
+              <div className="flex-1 space-y-1.5">
+                <Label htmlFor={`reg-${idx}`} className="text-xs text-muted-foreground">
+                  Register No.
+                </Label>
+                <div className="relative">
+                  <Hash className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    id={`reg-${idx}`}
+                    placeholder="e.g. 2021CS1234"
+                    value={author.registerNumber}
+                    onChange={(e) => updateAuthor(idx, 'registerNumber', e.target.value)}
+                    className="h-9 pl-8"
+                  />
+                </div>
+              </div>
+              {authors.length > 1 && (
+                <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeAuthor(idx)}>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              )}
             </div>
+          ))}
+        </div>
+
+        {/* Affiliation */}
+        <div className="space-y-3 p-4 rounded-lg border bg-muted/30">
+          <Label className="text-sm font-semibold flex items-center gap-1.5">
+            <Building2 className="h-4 w-4 text-primary" />
+            Affiliation
+          </Label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="department" className="text-xs text-muted-foreground">
-                Department
-              </Label>
+              <Label htmlFor="department" className="text-xs text-muted-foreground">Department</Label>
               <Input
                 id="department"
                 placeholder="e.g. Computer Science and Engineering"
@@ -129,19 +176,24 @@ export function GenerateForm({ onGenerate, isLoading }: GenerateFormProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="college" className="text-xs text-muted-foreground">
-                College / University
-              </Label>
-              <div className="relative">
-                <Building2 className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  id="college"
-                  placeholder="e.g. MIT"
-                  value={college}
-                  onChange={(e) => setCollege(e.target.value)}
-                  className="h-9 pl-8"
-                />
-              </div>
+              <Label htmlFor="college" className="text-xs text-muted-foreground">College / University</Label>
+              <Input
+                id="college"
+                placeholder="e.g. MIT"
+                value={college}
+                onChange={(e) => setCollege(e.target.value)}
+                className="h-9"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="affiliation" className="text-xs text-muted-foreground">City, Country</Label>
+              <Input
+                id="affiliation"
+                placeholder="e.g. Cambridge, MA, USA"
+                value={affiliation}
+                onChange={(e) => setAffiliation(e.target.value)}
+                className="h-9"
+              />
             </div>
           </div>
         </div>
@@ -176,6 +228,25 @@ export function GenerateForm({ onGenerate, isLoading }: GenerateFormProps) {
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
           />
+        </div>
+
+        {/* Proposed System Idea */}
+        <div className="space-y-2">
+          <Label htmlFor="proposedIdea" className="text-sm font-medium flex items-center gap-1.5">
+            <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+            Proposed System / Methodology
+            <span className="text-muted-foreground font-normal">(Optional)</span>
+          </Label>
+          <Textarea
+            id="proposedIdea"
+            placeholder="Describe your proposed approach, system architecture, algorithm, or novel method... Leave blank and the AI will design one for you."
+            value={proposedIdea}
+            onChange={(e) => setProposedIdea(e.target.value)}
+            rows={4}
+          />
+          <p className="text-xs text-muted-foreground">
+            If you have a specific idea for the proposed system, describe it here. Otherwise, the AI will create one.
+          </p>
         </div>
 
         {/* Domain & Citation */}
@@ -247,7 +318,7 @@ export function GenerateForm({ onGenerate, isLoading }: GenerateFormProps) {
           </div>
           <Slider
             min={3}
-            max={25}
+            max={30}
             step={1}
             value={[pageCount]}
             onValueChange={([val]) => setPageCount(val)}
@@ -259,13 +330,14 @@ export function GenerateForm({ onGenerate, isLoading }: GenerateFormProps) {
             <span>15 pages</span>
             <span>20 pages</span>
             <span>25 pages</span>
+            <span>30 pages</span>
           </div>
         </div>
 
         {/* Submit */}
         <Button
           onClick={handleSubmit}
-          disabled={isLoading || !topic.trim() || topic.trim().length < 5 || !authorName.trim()}
+          disabled={isLoading || !topic.trim() || topic.trim().length < 5 || !authors[0].name.trim()}
           className="w-full h-11 gap-2 text-sm font-semibold shadow-sm"
           size="lg"
         >

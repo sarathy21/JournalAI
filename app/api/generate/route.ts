@@ -28,7 +28,9 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { topic, domain, citationStyle, wordCount, pageCount, authorName, department, college, registerNumber } = body
+  const { topic, domain, citationStyle, wordCount, pageCount, authors, affiliation, department, college, proposedIdea,
+    // Legacy single-author fields
+    authorName, registerNumber } = body
 
   if (!topic || topic.trim().length < 5) {
     return new Response('Topic is required and must be at least 5 characters', { status: 400 })
@@ -40,9 +42,13 @@ export async function POST(request: Request) {
     citationStyle: citationStyle || 'IEEE',
     wordCount: wordCount || 2000,
     pageCount: pageCount || undefined,
-    authorName: authorName || undefined,
+    authors: authors || undefined,
+    affiliation: affiliation || undefined,
     department: department || undefined,
     college: college || undefined,
+    proposedIdea: proposedIdea || undefined,
+    // Legacy compat
+    authorName: authorName || undefined,
     registerNumber: registerNumber || undefined,
   })
 

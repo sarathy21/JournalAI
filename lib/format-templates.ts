@@ -42,7 +42,7 @@ const ieeetwocolumncss = `
     column-span: all;
   }
   h1 { 
-    font-size: 18pt; 
+    font-size: 14pt; 
     text-align: center; 
     margin: 0 0 0.4em 0; 
     font-weight: bold; 
@@ -54,7 +54,9 @@ const ieeetwocolumncss = `
     margin: 0.3em 0 0.8em 0;
     column-span: all;
   }
-  .author-name { font-size: 11pt; font-weight: bold; margin: 0; }
+  .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; }
   .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; }
   
   /* Two-column content area */
@@ -65,14 +67,14 @@ const ieeetwocolumncss = `
   }
   
   h2 { 
-    font-size: 11pt; 
+    font-size: 12pt; 
     margin: 1em 0 0.4em 0; 
     font-weight: bold; 
     text-transform: uppercase;
     column-span: none;
   }
   h3 { 
-    font-size: 10pt; 
+    font-size: 11pt; 
     margin: 0.8em 0 0.3em 0; 
     font-weight: bold; 
     font-style: italic; 
@@ -165,19 +167,21 @@ const ieeeSingleColumnCss = `
     box-decoration-break: clone;
   }
   h1 { 
-    font-size: 16pt; 
+    font-size: 14pt; 
     text-align: center; 
     margin: 0 0 0.5em 0; 
     font-weight: bold; 
     text-transform: uppercase;
   }
   .author-block { text-align: center; margin: 0.3em 0 1em 0; }
-  .author-name { font-size: 12pt; font-weight: bold; margin: 0; }
-  .author-detail { font-size: 10pt; font-style: italic; margin: 0.1em 0; color: #333; }
+  .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; }
+  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; }
   .keywords { font-size: 10pt; margin: 0.5em 0 1.5em 0; }
   
-  h2 { font-size: 13pt; margin: 1.2em 0 0.5em 0; font-weight: bold; text-transform: uppercase; }
-  h3 { font-size: 12pt; margin: 1em 0 0.4em 0; font-weight: bold; font-style: italic; }
+  h2 { font-size: 12pt; margin: 1.2em 0 0.5em 0; font-weight: bold; text-transform: uppercase; }
+  h3 { font-size: 11pt; margin: 1em 0 0.4em 0; font-weight: bold; font-style: italic; }
   p { text-align: justify; margin: 0 0 0.8em 0; text-indent: 1.5em; }
   p:first-of-type { text-indent: 0; }
   
@@ -233,12 +237,14 @@ const apaFormatCss = `
     font-weight: bold;
   }
   .author-block { text-align: center; margin: 1em 0 2em 0; line-height: 2; }
-  .author-name { font-size: 12pt; font-weight: normal; margin: 0; }
+  .author-name { font-size: 10pt; font-weight: normal; margin: 0; }
+  .author-reg { font-size: 9pt; margin: 0; color: #333; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0; }
   .author-detail { font-size: 12pt; font-style: normal; margin: 0; }
   .keywords { font-size: 12pt; margin: 1em 0 2em 0; font-style: italic; }
   
   h2 { font-size: 12pt; margin: 1em 0 0; font-weight: bold; text-align: center; }
-  h3 { font-size: 12pt; margin: 1em 0 0; font-weight: bold; font-style: italic; text-align: left; }
+  h3 { font-size: 11pt; margin: 1em 0 0; font-weight: bold; font-style: italic; text-align: left; }
   p { text-align: left; margin: 0; text-indent: 0.5in; }
   
   table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 11pt; }
@@ -288,7 +294,9 @@ const modernCleanCss = `
     padding-bottom: 0.3em;
   }
   .author-block { text-align: center; margin: 0.5em 0 1.5em 0; }
-  .author-name { font-size: 13pt; font-weight: 600; margin: 0; color: #374151; }
+  .author-name { font-size: 10pt; font-weight: 600; margin: 0.15em 0 0; color: #374151; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #6b7280; }
+  .author-affiliation { font-size: 9pt; margin: 0.05em 0; color: #6b7280; font-style: italic; }
   .author-detail { font-size: 10pt; margin: 0.2em 0; color: #6b7280; }
   .keywords { 
     font-size: 10pt; 
@@ -375,7 +383,9 @@ const classicAcademicCss = `
     letter-spacing: 2pt;
   }
   .author-block { text-align: center; margin: 1em 0 2em 0; }
-  .author-name { font-size: 12pt; font-weight: normal; font-variant: small-caps; margin: 0; }
+  .author-name { font-size: 10pt; font-weight: normal; font-variant: small-caps; margin: 0.15em 0 0; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; }
   .author-detail { font-size: 10pt; font-style: italic; margin: 0.2em 0; }
   .keywords { font-size: 10pt; margin: 1em 0 2em 0; text-align: center; font-style: italic; }
   
