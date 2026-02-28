@@ -123,11 +123,21 @@ FORMAT RULES — follow every rule without exception:
 5. IEEE section numbering: I. II. III. IV. V. VI. (Roman numerals)
 6. IEEE subsection lettering: A. B. C. (capital letters)
 7. Tables: <table> with <thead>/<tbody>/<tr>/<th>/<td>. Caption above: <p class="table-caption">Table I: Title</p>
-8. ASCII diagrams: <pre class="figure">...</pre> then <p class="fig-caption">Fig. N. Caption</p>
+8. FIGURES & CHARTS — use inline SVG for visual elements (NOT ASCII art):
+   - Wrap every figure in: <div class="figure-container">...<p class="fig-caption">Fig. N. Caption</p></div>
+   - BAR CHARTS: Use <svg> with <rect> elements. Include axis labels, data labels, a legend, and gridlines.
+   - PIE CHARTS: Use <svg> with <path> or <circle> elements using stroke-dasharray. Include percentage labels and a legend.
+   - LINE GRAPHS: Use <svg> with <polyline> or <path> elements. Include axis labels and data point markers.
+   - FLOWCHARTS / ARCHITECTURE DIAGRAMS: Use <svg> with <rect>, <text>, and <line> or <path> with marker-end arrows.
+   - All SVG must use viewBox for responsive sizing, e.g. viewBox="0 0 500 300".
+   - Use readable font sizes (12-14px) inside SVG <text> elements.
+   - Use distinct fill colors for each data series (e.g., #4285F4, #EA4335, #FBBC04, #34A853, #FF6D01, #46BDC6).
+   - EVERY figure must have a descriptive <p class="fig-caption"> caption below it.
 9. Citations in IEEE style: [1], [2], [1]–[4]
 10. Each paragraph must be 120–200 words of substantive academic content.
 11. MANDATORY WORD COUNT: Every section system message specifies the minimum word count. YOU MUST reach that word count before stopping. If you run out of obvious content, add more analysis, examples, comparisons, or implications paragraphs. Do NOT stop early under any circumstances. Your output is automatically word-counted and sections below the minimum will be marked incomplete.
-12. When you think you are done — check if you have reached the minimum. If not, write more <p> paragraphs with deeper analysis until you do.`
+12. When you think you are done — check if you have reached the minimum. If not, write more <p> paragraphs with deeper analysis until you do.
+13. Include at least 3-4 figures total across the paper: architecture/flow diagrams, bar charts, pie charts, or line graphs as appropriate for the content.`
 
   const paperType = detectPaperType(topic, domain)
   const ctx: SectionBuildContext = { topic, domain, citationStyle, w, authorBlock, refCount, baseSystem, proposedIdea }
@@ -252,12 +262,15 @@ Begin with: <h2>III. EXISTING SYSTEM</h2>
 
 Write a 3-sentence overview of current/existing approaches to the problem.
 
-Then include an architecture/flow diagram of the existing system:
-<pre class="figure">
-Draw a detailed ASCII flowchart of the existing system/approach with at least 5 components
-connected by arrows (-->). Use +------+ boxes. Show the typical workflow, data flow, or architecture.
-</pre>
+Then include an architecture/flow diagram of the existing system as an inline SVG:
+<div class="figure-container">
+<svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+  Draw a detailed SVG flowchart of the existing system/approach with at least 5 components
+  as rectangles connected by arrows (lines with arrowhead markers). Show the typical workflow, data flow, or architecture.
+  Use fill colors like #E3F2FD, #FFF3E0, #E8F5E9 for boxes, #333 for text, and #666 for arrows.
+</svg>
 <p class="fig-caption">Fig. 1. Architecture of the existing system for ${topic}</p>
+</div>
 
 Then write three subsections:
 
@@ -297,13 +310,16 @@ Begin with: <h2>IV. PROPOSED WORK AND METHODOLOGY</h2>
 
 Write a 3-sentence overview of what is being proposed and why it is superior to existing approaches.
 
-Then include the proposed system architecture:
-<pre class="figure">
-Draw a detailed ASCII diagram of the proposed system architecture/methodology with at least 8 components.
-Use +------+ boxes and --> arrows. Show data flow, processing stages, and key modules.
-Make it specific to the proposed approach for ${topic}.
-</pre>
+Then include the proposed system architecture as an inline SVG:
+<div class="figure-container">
+<svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+  Draw a detailed SVG diagram of the proposed system architecture/methodology with at least 8 components.
+  Use rectangles with rounded corners, arrows connecting them, and clear text labels.
+  Use fill colors like #E8EAF6, #E0F7FA, #FFF9C4, #F3E5F5 for modules.
+  Show data flow, processing stages, and key modules specific to the proposed approach for ${topic}.
+</svg>
 <p class="fig-caption">Fig. 2. Architecture of the proposed system for ${topic}</p>
+</div>
 
 Then write four subsections:
 
@@ -360,11 +376,22 @@ After this subsection, include:
   <tbody>(6–8 rows)</tbody>
 </table>
 
-<pre class="figure">
-Performance Comparison — ASCII bar chart with at least 4 methods.
-Use | characters for bars, labels on left, percentages on right.
-</pre>
+<div class="figure-container">
+<svg viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
+  Draw an SVG bar chart comparing at least 4 methods/metrics. Use colored <rect> bars (e.g., #4285F4 for proposed, #EA4335 for baseline).
+  Include x-axis labels, y-axis labels with gridlines, percentage values on top of each bar, and a legend.
+</svg>
 <p class="fig-caption">Fig. 3. Comparative performance of proposed vs baseline approaches</p>
+</div>
+
+Also include a pie chart showing the distribution of results or error categories:
+<div class="figure-container">
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  Draw an SVG pie chart with at least 4 segments using distinct colors (#4285F4, #EA4335, #FBBC04, #34A853).
+  Include percentage labels on or near each segment and a legend on the right side.
+</svg>
+<p class="fig-caption">Fig. 4. Distribution of ${topic} results by category</p>
+</div>
 
 <h3>B. Analysis and Interpretation</h3>
 Write at least ${Math.round(w.resultsDisc * 0.25)} words.
@@ -423,7 +450,17 @@ Begin with <h2>VI. CONCLUSION</h2>.`,
 // THEORETICAL paper sections (humanities, ethics, law, philosophy, policy)
 // ════════════════════════════════════════════════════════════════════════════
 function buildTheoreticalSections(ctx: SectionBuildContext): SectionPrompt[] {
-  const { topic, domain, citationStyle, w, authorBlock, refCount, baseSystem } = ctx
+  const { topic, domain, citationStyle, authorBlock, refCount, baseSystem } = ctx
+  // Theoretical papers have their own budget split
+  const totalWords = Object.values(ctx.w).reduce((a, b) => a + b, 0)
+  const w = {
+    intro:      Math.round(totalWords * 0.12),
+    litRev:     Math.round(totalWords * 0.16),
+    framework:  Math.round(totalWords * 0.20),
+    analysis:   Math.round(totalWords * 0.22),
+    discussion: Math.round(totalWords * 0.16),
+    conclusion: Math.round(totalWords * 0.14),
+  }
   return [
     // Section 1: Front Matter + Introduction (same structure)
     {
@@ -502,7 +539,7 @@ Begin with <h2>II. BACKGROUND AND CONTEXT</h2>.`,
     // Section 3: Analytical Framework
     {
       sectionName: 'Analytical Framework',
-      systemMessage: `${baseSystem}\nWrite ONLY the Analytical Framework section. Target: minimum ${w.method} words.`,
+      systemMessage: `${baseSystem}\nWrite ONLY the Analytical Framework section. Target: minimum ${w.framework} words.`,
       userPrompt: `Write Section III (Analytical Framework) for an academic paper on:
 
 TOPIC: ${topic}
@@ -512,34 +549,38 @@ Begin with: <h2>III. ANALYTICAL FRAMEWORK</h2>
 
 Write a 3-sentence overview of the analytical approach.
 
-Then include a conceptual diagram:
-<pre class="figure">
-Draw an ASCII diagram showing the analytical framework — key concepts, their relationships, and how they connect to the research questions. Use boxes and arrows.
-</pre>
+Then include a conceptual diagram as inline SVG:
+<div class="figure-container">
+<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg">
+  Draw an SVG diagram showing the analytical framework — key concepts as rounded rectangles,
+  their relationships as labeled arrows, and how they connect to the research questions.
+  Use soft fill colors (#E8EAF6, #FFF3E0, #E8F5E9) and clear text labels.
+</svg>
 <p class="fig-caption">Fig. 1. Conceptual framework for analyzing ${topic}</p>
+</div>
 
 Then write three subsections:
 
 <h3>A. Theoretical Foundations</h3>
-Write at least ${Math.round(w.method * 0.35)} words.
+Write at least ${Math.round(w.framework * 0.35)} words.
 Describe the theoretical lens(es) used in this analysis. Justify why these theories are appropriate for ${topic}.
 
 <h3>B. Analytical Approach and Criteria</h3>
-Write at least ${Math.round(w.method * 0.35)} words.
+Write at least ${Math.round(w.framework * 0.35)} words.
 Detail the criteria, dimensions, or categories used for analysis. Explain how arguments are evaluated, what evidence counts, and the standards applied.
 
 <h3>C. Scope, Limitations, and Ethical Considerations</h3>
-Write at least ${Math.round(w.method * 0.30)} words.
+Write at least ${Math.round(w.framework * 0.30)} words.
 Define the boundaries of the analysis. Acknowledge limitations of the approach. Discuss ethical dimensions relevant to ${topic}.
 
 Begin with <h2>III. ANALYTICAL FRAMEWORK</h2>.`,
-      minWords: w.method,
+      minWords: w.framework,
     },
 
     // Section 4: Analysis and Arguments
     {
       sectionName: 'Analysis and Arguments',
-      systemMessage: `${baseSystem}\nWrite ONLY the Analysis section. Target: minimum ${w.results} words.`,
+      systemMessage: `${baseSystem}\nWrite ONLY the Analysis section. Target: minimum ${w.analysis} words.`,
       userPrompt: `Write Section IV (Analysis and Arguments) for an academic paper on:
 
 TOPIC: ${topic}
@@ -552,7 +593,7 @@ Write a 3-sentence overview of the main arguments presented.
 Then write three subsections:
 
 <h3>A. Primary Analysis</h3>
-Write at least ${Math.round(w.results * 0.40)} words.
+Write at least ${Math.round(w.analysis * 0.40)} words.
 Present the main analytical arguments. Examine the evidence, examples, case studies, or logical reasoning that supports each claim. Address counterarguments.
 
 After this subsection, include:
@@ -563,15 +604,15 @@ After this subsection, include:
 </table>
 
 <h3>B. Secondary Dimensions and Nuances</h3>
-Write at least ${Math.round(w.results * 0.35)} words.
+Write at least ${Math.round(w.analysis * 0.35)} words.
 Explore additional dimensions, edge cases, or complicating factors. Show the complexity and nuance of ${topic}.
 
 <h3>C. Synthesis of Arguments</h3>
-Write at least ${Math.round(w.results * 0.25)} words.
+Write at least ${Math.round(w.analysis * 0.25)} words.
 Bring together the threads of analysis. What overall picture emerges? What is the paper's central contribution to understanding ${topic}?
 
 Begin with <h2>IV. ANALYSIS AND ARGUMENTS</h2>.`,
-      minWords: w.results,
+      minWords: w.analysis,
     },
 
     // Section 5: Discussion and Implications
@@ -644,7 +685,17 @@ Begin with <h2>VI. CONCLUSION</h2>.`,
 // REVIEW paper sections (survey, meta-analysis, comparative study)
 // ════════════════════════════════════════════════════════════════════════════
 function buildReviewSections(ctx: SectionBuildContext): SectionPrompt[] {
-  const { topic, domain, citationStyle, w, authorBlock, refCount, baseSystem } = ctx
+  const { topic, domain, citationStyle, authorBlock, refCount, baseSystem } = ctx
+  // Review papers have their own budget split
+  const totalWords = Object.values(ctx.w).reduce((a, b) => a + b, 0)
+  const w = {
+    intro:       Math.round(totalWords * 0.12),
+    litRev:      Math.round(totalWords * 0.16),
+    review:      Math.round(totalWords * 0.22),
+    comparative: Math.round(totalWords * 0.20),
+    discussion:  Math.round(totalWords * 0.16),
+    conclusion:  Math.round(totalWords * 0.14),
+  }
   return [
     // Section 1: Front Matter + Introduction
     {
@@ -705,7 +756,7 @@ Begin with <h2>II. BACKGROUND</h2>.`,
     // Section 3: Systematic Review
     {
       sectionName: 'Systematic Review of Literature',
-      systemMessage: `${baseSystem}\nWrite ONLY the Systematic Review section. Target: minimum ${w.method} words.`,
+      systemMessage: `${baseSystem}\nWrite ONLY the Systematic Review section. Target: minimum ${w.review} words.`,
       userPrompt: `Write Section III (Systematic Review of Literature) for a review paper on:
 
 TOPIC: ${topic}
@@ -714,13 +765,13 @@ DOMAIN: ${domain}
 Begin with: <h2>III. SYSTEMATIC REVIEW OF LITERATURE</h2>
 
 <h3>A. Thematic Category 1</h3>
-Write at least ${Math.round(w.method * 0.35)} words. Group related studies by a major theme or approach. For each study describe: authors (placeholder), methodology, key findings, and limitations.
+Write at least ${Math.round(w.review * 0.35)} words. Group related studies by a major theme or approach. For each study describe: authors (placeholder), methodology, key findings, and limitations.
 
 <h3>B. Thematic Category 2</h3>
-Write at least ${Math.round(w.method * 0.35)} words. Second thematic grouping with the same detailed treatment.
+Write at least ${Math.round(w.review * 0.35)} words. Second thematic grouping with the same detailed treatment.
 
 <h3>C. Thematic Category 3</h3>
-Write at least ${Math.round(w.method * 0.30)} words. Third thematic grouping.
+Write at least ${Math.round(w.review * 0.30)} words. Third thematic grouping.
 
 Include a summary table after thematic categories:
 <p class="table-caption">Table II: Summary of Reviewed Studies</p>
@@ -730,13 +781,13 @@ Include a summary table after thematic categories:
 </table>
 
 Begin with <h2>III. SYSTEMATIC REVIEW OF LITERATURE</h2>.`,
-      minWords: w.method,
+      minWords: w.review,
     },
 
     // Section 4: Comparative Analysis
     {
       sectionName: 'Comparative Analysis',
-      systemMessage: `${baseSystem}\nWrite ONLY the Comparative Analysis section. Target: minimum ${w.results} words.`,
+      systemMessage: `${baseSystem}\nWrite ONLY the Comparative Analysis section. Target: minimum ${w.comparative} words.`,
       userPrompt: `Write Section IV (Comparative Analysis) for a review paper on:
 
 TOPIC: ${topic}
@@ -745,25 +796,28 @@ DOMAIN: ${domain}
 Begin with: <h2>IV. COMPARATIVE ANALYSIS</h2>
 
 <h3>A. Cross-Study Comparisons</h3>
-Write at least ${Math.round(w.results * 0.40)} words.
+Write at least ${Math.round(w.comparative * 0.40)} words.
 Compare the studies from Section III across dimensions: methodology, scale, findings, context. Identify areas of consensus and disagreement.
 
-Include a comparison chart:
-<pre class="figure">
-Create an ASCII chart comparing the key approaches or methods found in the reviewed studies. Show at least 5 dimensions of comparison.
-</pre>
+Include a comparison chart as inline SVG:
+<div class="figure-container">
+<svg viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
+  Create an SVG bar or grouped bar chart comparing the key approaches or methods found in the reviewed studies.
+  Show at least 5 dimensions of comparison. Use distinct colors for each approach, axis labels, and a legend.
+</svg>
 <p class="fig-caption">Fig. 1. Comparative overview of reviewed approaches</p>
+</div>
 
 <h3>B. Trends and Patterns</h3>
-Write at least ${Math.round(w.results * 0.30)} words.
+Write at least ${Math.round(w.comparative * 0.30)} words.
 Identify temporal trends, emerging methods, and shifting research focus areas.
 
 <h3>C. Strengths and Weaknesses of Existing Research</h3>
-Write at least ${Math.round(w.results * 0.30)} words.
+Write at least ${Math.round(w.comparative * 0.30)} words.
 Synthesize the collective strengths and weaknesses of the reviewed body of work.
 
 Begin with <h2>IV. COMPARATIVE ANALYSIS</h2>.`,
-      minWords: w.results,
+      minWords: w.comparative,
     },
 
     // Section 5: Discussion and Research Agenda
@@ -863,15 +917,15 @@ CITATION STYLE: ${citationStyle}
 MINIMUM TOTAL WORDS: ${targetWords}
 
 OUTPUT RULES:
-- Use ONLY HTML tags: <h1>, <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, <pre>, <div>
+- Use ONLY HTML tags: <h1>, <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, <pre>, <div>, <svg>
 - NO markdown, NO code fences, NO preamble — start directly with <h1>
 - Every paragraph must be 120-200 words and use style="text-align:justify"
 - Use IEEE section numbering: I, II, III, IV, V, VI (Roman numerals)
 - Use IEEE subsection lettering: A, B, C
 - Tables: use <table> with <thead>/<tbody>, label as "Table I", "Table II" (Roman numerals)
 - Place table captions ABOVE tables using <p class="table-caption">Table I: Description</p>
-- Figures: use <pre class="figure"> for ASCII art diagrams, followed by <p class="fig-caption">Fig. 1. Description</p>
-- Include at least 2-3 tables and 2 figures throughout the paper
+- Figures: use inline <svg> with viewBox for charts, diagrams, and graphs. Wrap in <div class="figure-container"> with <p class="fig-caption">Fig. N. Description</p>
+- Include at least 2-3 tables and 3-4 SVG figures (bar charts, pie charts, flowcharts) throughout the paper
 - Use IEEE citation format: [1], [2], etc.
 - Use formal academic English, third person
 

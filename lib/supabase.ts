@@ -137,7 +137,6 @@ export async function syncUserToSupabase(clerkUser: {
       email: clerkUser.email ?? '',
       first_name: clerkUser.firstName ?? '',
       last_name: clerkUser.lastName ?? '',
-      avatar_url: clerkUser.imageUrl ?? '',
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'clerk_id' }

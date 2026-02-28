@@ -54,10 +54,10 @@ const ieeetwocolumncss = `
     margin: 0.3em 0 0.8em 0;
     column-span: all;
   }
-  .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; }
-  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; }
-  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; }
-  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; }
+  .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; text-align: center; }
   
   /* Two-column content area */
   .two-column {
@@ -139,6 +139,12 @@ const ieeetwocolumncss = `
   li { margin-bottom: 0.2em; }
   strong { font-weight: bold; }
   em { font-style: italic; }
+  
+  /* SVG Charts & Figures */
+  .figure-container { text-align: center; margin: 0.8em 0; break-inside: avoid; column-span: all; }
+  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
+  .chart-container { text-align: center; margin: 0.8em 0; break-inside: avoid; }
+  .chart-container svg { max-width: 100%; height: auto; }
 `
 
 // IEEE Single Column Format
@@ -174,10 +180,10 @@ const ieeeSingleColumnCss = `
     text-transform: uppercase;
   }
   .author-block { text-align: center; margin: 0.3em 0 1em 0; }
-  .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; }
-  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; }
-  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; }
-  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; }
+  .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; text-align: center; }
   .keywords { font-size: 10pt; margin: 0.5em 0 1.5em 0; }
   
   h2 { font-size: 12pt; margin: 1.2em 0 0.5em 0; font-weight: bold; text-transform: uppercase; }
@@ -197,6 +203,12 @@ const ieeeSingleColumnCss = `
   li { margin-bottom: 0.3em; }
   strong { font-weight: bold; }
   em { font-style: italic; }
+  
+  /* SVG Charts & Figures */
+  .figure-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
+  .chart-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .chart-container svg { max-width: 100%; height: auto; }
 `
 
 // APA 7th Edition Format
@@ -237,10 +249,10 @@ const apaFormatCss = `
     font-weight: bold;
   }
   .author-block { text-align: center; margin: 1em 0 2em 0; line-height: 2; }
-  .author-name { font-size: 10pt; font-weight: normal; margin: 0; }
-  .author-reg { font-size: 9pt; margin: 0; color: #333; }
-  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0; }
-  .author-detail { font-size: 12pt; font-style: normal; margin: 0; }
+  .author-name { font-size: 10pt; font-weight: normal; margin: 0; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0; text-align: center; }
+  .author-detail { font-size: 12pt; font-style: normal; margin: 0; text-align: center; }
   .keywords { font-size: 12pt; margin: 1em 0 2em 0; font-style: italic; }
   
   h2 { font-size: 12pt; margin: 1em 0 0; font-weight: bold; text-align: center; }
@@ -257,6 +269,12 @@ const apaFormatCss = `
   
   ul, ol { margin: 0 0 0 0.5in; }
   li { margin-bottom: 0; }
+  
+  /* SVG Charts & Figures */
+  .figure-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
+  .chart-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .chart-container svg { max-width: 100%; height: auto; }
 `
 
 // Modern Clean Format
@@ -294,9 +312,9 @@ const modernCleanCss = `
     padding-bottom: 0.3em;
   }
   .author-block { text-align: center; margin: 0.5em 0 1.5em 0; }
-  .author-name { font-size: 10pt; font-weight: 600; margin: 0.15em 0 0; color: #374151; }
-  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #6b7280; }
-  .author-affiliation { font-size: 9pt; margin: 0.05em 0; color: #6b7280; font-style: italic; }
+  .author-name { font-size: 10pt; font-weight: 600; margin: 0.15em 0 0; color: #374151; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #6b7280; text-align: center; }
+  .author-affiliation { font-size: 9pt; margin: 0.05em 0; color: #6b7280; font-style: italic; text-align: center; }
   .author-detail { font-size: 10pt; margin: 0.2em 0; color: #6b7280; }
   .keywords { 
     font-size: 10pt; 
@@ -347,6 +365,12 @@ const modernCleanCss = `
   li { margin-bottom: 0.3em; }
   strong { font-weight: 600; }
   em { font-style: italic; }
+  
+  /* SVG Charts & Figures */
+  .figure-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
+  .chart-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .chart-container svg { max-width: 100%; height: auto; }
 `
 
 // Classic Academic Format
@@ -383,9 +407,9 @@ const classicAcademicCss = `
     letter-spacing: 2pt;
   }
   .author-block { text-align: center; margin: 1em 0 2em 0; }
-  .author-name { font-size: 10pt; font-weight: normal; font-variant: small-caps; margin: 0.15em 0 0; }
-  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; }
-  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; }
+  .author-name { font-size: 10pt; font-weight: normal; font-variant: small-caps; margin: 0.15em 0 0; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; text-align: center; }
   .author-detail { font-size: 10pt; font-style: italic; margin: 0.2em 0; }
   .keywords { font-size: 10pt; margin: 1em 0 2em 0; text-align: center; font-style: italic; }
   
@@ -412,6 +436,12 @@ const classicAcademicCss = `
   
   ul, ol { margin: 0.5em 0 1em 2em; }
   li { margin-bottom: 0.4em; }
+  
+  /* SVG Charts & Figures */
+  .figure-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
+  .chart-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .chart-container svg { max-width: 100%; height: auto; }
 `
 
 export const FORMAT_TEMPLATES: FormatTemplate[] = [
