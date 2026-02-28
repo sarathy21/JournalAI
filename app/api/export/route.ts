@@ -4,7 +4,6 @@ import {
   Packer,
   Paragraph,
   TextRun,
-  HeadingLevel,
   AlignmentType,
   Table,
   TableRow,
@@ -56,140 +55,154 @@ function splitFrontMatterAndBody(html: string): { frontMatter: string; body: str
 function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
   const elements: (Paragraph | Table)[] = []
 
-  // Remove SVG elements (not renderable in docx) but keep fig-captions
+  // Remove SVG elements (not renderable in docx)
   let processedHtml = html.replace(/<svg[\s\S]*?<\/svg>/gi, '')
-  // Remove figure-container wrapper divs
-  processedHtml = processedHtml.replace(/<div[^>]*class="(figure-container|chart-container)"[^>]*>/gi, '')
+  // Strip figure/chart container wrapper divs only (keep inner content)
+  processedHtml = processedHtml.replace(/<div[^>]*class="(?:figure-container|chart-container)"[^>]*>/gi, '')
 
-  // Extract and process tables first — replace with placeholders
+  // Extract tables — replace with placeholders
   const tables: string[] = []
-  processedHtml = processedHtml.replace(/<table[^>]*>([\s\S]*?)<\/table>/gi, (match) => {
+  processedHtml = processedHtml.replace(/<table[^>]*>[\s\S]*?<\/table>/gi, (match) => {
     tables.push(match)
     return `\n__TABLE_${tables.length - 1}__\n`
   })
 
-  // Strip pre.figure blocks to text
-  processedHtml = processedHtml
-    .replace(/<pre[^>]*class="figure"[^>]*>([\s\S]*?)<\/pre>/gi, '\n__FIGURE_START__$1__FIGURE_END__\n')
+  // Extract pre.figure blocks — replace with placeholders (preserve newlines inside)
+  const figures: string[] = []
+  processedHtml = processedHtml.replace(/<pre[^>]*class="figure"[^>]*>([\s\S]*?)<\/pre>/gi, (_m, inner) => {
+    figures.push(inner)
+    return `\n__FIGURE_${figures.length - 1}__\n`
+  })
 
-  // Process block-level elements
-  const cleaned = processedHtml
-    .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n__H1__$1\n')
-    .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n__H2__$1\n')
-    .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n__H3__$1\n')
-    .replace(/<div[^>]*class="author-block"[^>]*>([\s\S]*?)<\/div>/gi, '\n$1\n')
-    .replace(/<p[^>]*class="table-caption"[^>]*>(.*?)<\/p>/gi, '\n__TABLE_CAPTION__$1\n')
-    .replace(/<p[^>]*class="fig-caption"[^>]*>(.*?)<\/p>/gi, '\n__FIG_CAPTION__$1\n')
-    .replace(/<p[^>]*class="author-name"[^>]*>(.*?)<\/p>/gi, '\n__AUTHOR_NAME__$1\n')
-    .replace(/<p[^>]*class="author-reg"[^>]*>(.*?)<\/p>/gi, '\n__AUTHOR_REG__$1\n')
-    .replace(/<p[^>]*class="author-affiliation"[^>]*>(.*?)<\/p>/gi, '\n__AUTHOR_AFFILIATION__$1\n')
-    .replace(/<p[^>]*class="author-detail"[^>]*>(.*?)<\/p>/gi, '\n__AUTHOR_DETAIL__$1\n')
-    .replace(/<p[^>]*class="keywords"[^>]*>(.*?)<\/p>/gi, '\n__KEYWORDS__$1\n')
-    .replace(/<p[^>]*>(.*?)<\/p>/gi, '\n$1\n')
-    .replace(/<li[^>]*>(.*?)<\/li>/gi, '\n• $1\n')
+  // Mark block-level elements with tokens — use [\s\S]*? to handle multi-line content
+  const tokenised = processedHtml
+    .replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '\n__H1__$1__END__\n')
+    .replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n__H2__$1__END__\n')
+    .replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n__H3__$1__END__\n')
+    .replace(/<div[^>]*class="author-block"[^>]*>([\s\S]*?)<\/div>/gi, '\n__AUTHOR_BLOCK__$1__END__\n')
+    .replace(/<p[^>]*class="table-caption"[^>]*>([\s\S]*?)<\/p>/gi, '\n__TABLE_CAPTION__$1__END__\n')
+    .replace(/<p[^>]*class="fig-caption"[^>]*>([\s\S]*?)<\/p>/gi, '\n__FIG_CAPTION__$1__END__\n')
+    .replace(/<p[^>]*class="author-name"[^>]*>([\s\S]*?)<\/p>/gi, '\n__AUTHOR_NAME__$1__END__\n')
+    .replace(/<p[^>]*class="author-reg"[^>]*>([\s\S]*?)<\/p>/gi, '\n__AUTHOR_REG__$1__END__\n')
+    .replace(/<p[^>]*class="author-affiliation"[^>]*>([\s\S]*?)<\/p>/gi, '\n__AUTHOR_AFFILIATION__$1__END__\n')
+    .replace(/<p[^>]*class="author-detail"[^>]*>([\s\S]*?)<\/p>/gi, '\n__AUTHOR_DETAIL__$1__END__\n')
+    .replace(/<p[^>]*class="keywords"[^>]*>([\s\S]*?)<\/p>/gi, '\n__KEYWORDS__$1__END__\n')
+    .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '\n__P__$1__END__\n')
+    .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '\n__LI__$1__END__\n')
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
 
-  const lines = cleaned.split('\n').filter((l) => l.trim())
+  // Split into segments on our token boundaries
+  const segments = tokenised.split('\n').map(s => s.trim()).filter(Boolean)
 
-  for (const line of lines) {
-    if (line.startsWith('__H1__')) {
+  // Track whether the next paragraph is the first after a heading (no first-line indent)
+  let firstAfterHeading = true
+
+  const extractContent = (seg: string, token: string): string =>
+    seg.slice(token.length, seg.endsWith('__END__') ? -7 : undefined)
+
+  for (const seg of segments) {
+    // Skip stray end markers from block extraction
+    if (seg === '__END__') continue
+    if (seg.startsWith('__H1__')) {
+      const text = extractContent(seg, '__H1__')
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__H1__', ''), bold: true, size: 28, font: 'Times New Roman' })],
-          heading: HeadingLevel.HEADING_1,
+          children: parseInlineFormatting(text, 28),
           alignment: AlignmentType.CENTER,
           spacing: { after: 100 },
         })
       )
-    } else if (line.startsWith('__H2__')) {
+      firstAfterHeading = true
+    } else if (seg.startsWith('__H2__')) {
+      const text = extractContent(seg, '__H2__')
+      const isCentered = /abstract/i.test(text)
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__H2__', ''), bold: true, size: 24, font: 'Times New Roman' })],
-          heading: HeadingLevel.HEADING_2,
+          children: [new TextRun({ text: text.replace(/<[^>]+>/g, '').trim(), bold: true, size: 24, font: 'Times New Roman', allCaps: true })],
+          alignment: isCentered ? AlignmentType.CENTER : AlignmentType.LEFT,
           spacing: { before: 240, after: 80 },
         })
       )
-    } else if (line.startsWith('__H3__')) {
+      firstAfterHeading = true
+    } else if (seg.startsWith('__H3__')) {
+      const text = extractContent(seg, '__H3__')
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__H3__', ''), bold: true, italics: true, size: 22, font: 'Times New Roman' })],
-          heading: HeadingLevel.HEADING_3,
+          children: [new TextRun({ text: text.replace(/<[^>]+>/g, '').trim(), bold: true, italics: true, size: 22, font: 'Times New Roman' })],
+          alignment: AlignmentType.LEFT,
           spacing: { before: 160, after: 60 },
         })
       )
-    } else if (line.startsWith('__AUTHOR_NAME__')) {
+      firstAfterHeading = true
+    } else if (seg.startsWith('__AUTHOR_BLOCK__')) {
+      // Author block is handled by sub-tokens inside it — just continue
+      // (inner p.author-* lines will be picked up on subsequent segments)
+      continue
+    } else if (seg.startsWith('__AUTHOR_NAME__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__AUTHOR_NAME__', ''), bold: true, size: 20, font: 'Times New Roman' })],
+          children: [new TextRun({ text: extractContent(seg, '__AUTHOR_NAME__').replace(/<[^>]+>/g, '').trim(), bold: true, size: 20, font: 'Times New Roman' })],
           alignment: AlignmentType.CENTER,
           spacing: { after: 20 },
         })
       )
-    } else if (line.startsWith('__AUTHOR_REG__')) {
+    } else if (seg.startsWith('__AUTHOR_REG__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__AUTHOR_REG__', ''), size: 18, font: 'Times New Roman', color: '333333' })],
+          children: [new TextRun({ text: extractContent(seg, '__AUTHOR_REG__').replace(/<[^>]+>/g, '').trim(), size: 18, font: 'Times New Roman', color: '333333' })],
           alignment: AlignmentType.CENTER,
           spacing: { after: 10 },
         })
       )
-    } else if (line.startsWith('__AUTHOR_AFFILIATION__')) {
+    } else if (seg.startsWith('__AUTHOR_AFFILIATION__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__AUTHOR_AFFILIATION__', ''), italics: true, size: 18, font: 'Times New Roman', color: '333333' })],
+          children: [new TextRun({ text: extractContent(seg, '__AUTHOR_AFFILIATION__').replace(/<[^>]+>/g, '').trim(), italics: true, size: 18, font: 'Times New Roman', color: '333333' })],
           alignment: AlignmentType.CENTER,
           spacing: { after: 10 },
         })
       )
-    } else if (line.startsWith('__AUTHOR_DETAIL__')) {
+    } else if (seg.startsWith('__AUTHOR_DETAIL__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__AUTHOR_DETAIL__', ''), italics: true, size: 18, font: 'Times New Roman' })],
+          children: [new TextRun({ text: extractContent(seg, '__AUTHOR_DETAIL__').replace(/<[^>]+>/g, '').trim(), italics: true, size: 18, font: 'Times New Roman' })],
           alignment: AlignmentType.CENTER,
           spacing: { after: 20 },
         })
       )
-    } else if (line.startsWith('__TABLE_CAPTION__')) {
+    } else if (seg.startsWith('__TABLE_CAPTION__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__TABLE_CAPTION__', ''), bold: true, size: 18, font: 'Times New Roman' })],
+          children: parseInlineFormatting(extractContent(seg, '__TABLE_CAPTION__'), 18),
           alignment: AlignmentType.CENTER,
           spacing: { before: 200, after: 60 },
         })
       )
-    } else if (line.startsWith('__FIG_CAPTION__')) {
+    } else if (seg.startsWith('__FIG_CAPTION__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__FIG_CAPTION__', ''), italics: true, size: 18, font: 'Times New Roman' })],
+          children: parseInlineFormatting(extractContent(seg, '__FIG_CAPTION__'), 18),
           alignment: AlignmentType.CENTER,
           spacing: { before: 40, after: 160 },
         })
       )
-    } else if (line.startsWith('__KEYWORDS__')) {
+    } else if (seg.startsWith('__KEYWORDS__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__KEYWORDS__', ''), size: 18, font: 'Times New Roman' })],
+          children: parseInlineFormatting(extractContent(seg, '__KEYWORDS__'), 18),
+          alignment: AlignmentType.LEFT,
           spacing: { after: 200 },
         })
       )
-    } else if (line.match(/__TABLE_(\d+)__/)) {
-      const idx = parseInt(line.match(/__TABLE_(\d+)__/)![1])
-      const tableHtml = tables[idx]
-      if (tableHtml) {
-        const docxTable = parseHtmlTable(tableHtml)
-        if (docxTable) elements.push(docxTable)
-      }
-    } else if (line.includes('__FIGURE_START__')) {
-      // ASCII figure — render as monospace text
-      const figText = line.replace('__FIGURE_START__', '').replace('__FIGURE_END__', '').trim()
-      const figLines = figText.split('\n').filter(Boolean)
-      for (const fl of figLines) {
+      firstAfterHeading = false
+    } else if (seg.match(/^__TABLE_(\d+)__$/)) {
+      const idx = parseInt(seg.match(/^__TABLE_(\d+)__$/)![1])
+      const docxTable = parseHtmlTable(tables[idx] || '')
+      if (docxTable) elements.push(docxTable)
+    } else if (seg.match(/^__FIGURE_(\d+)__$/)) {
+      const idx = parseInt(seg.match(/^__FIGURE_(\d+)__$/)![1])
+      const figText = (figures[idx] || '').replace(/<[^>]+>/g, '').trim()
+      for (const fl of figText.split('\n').filter(Boolean)) {
         elements.push(
           new Paragraph({
             children: [new TextRun({ text: fl, font: 'Courier New', size: 16 })],
@@ -197,15 +210,36 @@ function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
           })
         )
       }
-    } else {
-      // Parse inline formatting: <strong>, <em>, [N] citations
-      const runs = parseInlineFormatting(line.trim())
+    } else if (seg.startsWith('__LI__')) {
       elements.push(
         new Paragraph({
-          children: runs,
+          children: parseInlineFormatting('• ' + extractContent(seg, '__LI__'), 20),
+          alignment: AlignmentType.JUSTIFIED,
+          spacing: { after: 60 },
+          indent: { left: 360 },
+        })
+      )
+    } else if (seg.startsWith('__P__')) {
+      const content = extractContent(seg, '__P__')
+      const noIndent = firstAfterHeading
+      firstAfterHeading = false
+      elements.push(
+        new Paragraph({
+          children: parseInlineFormatting(content, 20),
           alignment: AlignmentType.JUSTIFIED,
           spacing: { after: 120 },
-          indent: { firstLine: 360 }, // 0.25 inch first-line indent
+          indent: noIndent ? undefined : { firstLine: 360 },
+        })
+      )
+    } else {
+      // Plain text fallback (shouldn't happen much)
+      const clean = seg.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim()
+      if (!clean) continue
+      elements.push(
+        new Paragraph({
+          children: [new TextRun({ text: clean, size: 20, font: 'Times New Roman' })],
+          alignment: AlignmentType.JUSTIFIED,
+          spacing: { after: 120 },
         })
       )
     }
@@ -214,18 +248,34 @@ function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
   return elements
 }
 
-/** Parse inline HTML formatting (<strong>, <em>) into TextRun array */
-function parseInlineFormatting(text: string): TextRun[] {
-  // Simple: just strip remaining tags and create a single run
-  // A more advanced approach would parse bold/italic spans
-  const clean = text
-    .replace(/<strong>(.*?)<\/strong>/gi, '$1')
-    .replace(/<em>(.*?)<\/em>/gi, '$1')
-    .replace(/<[^>]+>/g, '')
-    .trim()
-  
-  if (!clean) return [new TextRun({ text: ' ', size: 20, font: 'Times New Roman' })]
-  return [new TextRun({ text: clean, size: 20, font: 'Times New Roman' })]
+/** Parse inline HTML formatting (<strong>, <em>, <b>, <i>) into TextRun array */
+function parseInlineFormatting(text: string, baseSize = 20): TextRun[] {
+  const runs: TextRun[] = []
+  // Split on open/close bold/italic tags
+  const parts = text.split(/(<strong[^>]*>|<\/strong>|<b[^>]*>|<\/b>|<em[^>]*>|<\/em>|<i[^>]*>|<\/i>)/gi)
+  let bold = false, italic = false
+
+  for (const part of parts) {
+    if (!part) continue
+    if (/^<(strong|b)([^>]*)?>$/i.test(part)) { bold = true; continue }
+    if (/^<\/(strong|b)>$/i.test(part)) { bold = false; continue }
+    if (/^<(em|i)([^>]*)?>$/i.test(part)) { italic = true; continue }
+    if (/^<\/(em|i)>$/i.test(part)) { italic = false; continue }
+
+    const clean = part
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+    if (!clean) continue
+    runs.push(new TextRun({ text: clean, bold, italics: italic, size: baseSize, font: 'Times New Roman' }))
+  }
+
+  if (runs.length === 0) return [new TextRun({ text: ' ', size: baseSize, font: 'Times New Roman' })]
+  return runs
 }
 
 function parseHtmlTable(tableHtml: string): Table | null {
