@@ -1,10 +1,12 @@
 import { auth } from '@clerk/nextjs/server'
+import sharp from 'sharp'
 import {
   Document,
   Packer,
   Paragraph,
   TextRun,
   AlignmentType,
+  ImageRun,
   Table,
   TableRow,
   TableCell,
@@ -17,12 +19,29 @@ import {
  * Front matter: h1, author-block (title + authors only)
  * Body: abstract, keywords, and all numbered sections (in two-column)
  */
+/** Convert SVG string to PNG buffer, scaled to maxWidth, returns null on failure */
+async function svgToPng(
+  svgString: string,
+  maxWidth = 420
+): Promise<{ buffer: Buffer; width: number; height: number } | null> {
+  try {
+    const input = Buffer.from(svgString, 'utf8')
+    const result = await sharp(input)
+      .resize({ width: maxWidth, withoutEnlargement: true })
+      .png()
+      .toBuffer({ resolveWithObject: true })
+    return { buffer: result.data, width: result.info.width, height: result.info.height }
+  } catch {
+    return null
+  }
+}
+
 function splitFrontMatterAndBody(html: string): { frontMatter: string; body: string } {
-  // Remove SVG figures (cannot render in DOCX) but keep fig-captions
-  let processed = html.replace(/<svg[\s\S]*?<\/svg>/gi, '[Figure]')
-  // Remove figure-container/chart-container wrapper divs (opening + closing)
+  // Keep SVGs intact — they will be converted to images in htmlToDocxParagraphs
+  // Strip only the container div wrappers so the split regex stays simple
+  let processed = html
   processed = processed.replace(/<div[^>]*class="(?:figure-container|chart-container)"[^>]*>[\s\S]*?<\/div>/gi, (match) => {
-    // Keep inner content (fig-captions etc) but strip the wrapper div
+    // Keep inner content (SVG + captions), strip wrapper div tags only
     return match.replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '')
   })
 
@@ -52,13 +71,23 @@ function splitFrontMatterAndBody(html: string): { frontMatter: string; body: str
   return { frontMatter: '', body: processed }
 }
 
-function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
+async function htmlToDocxParagraphs(html: string): Promise<(Paragraph | Table)[]> {
   const elements: (Paragraph | Table)[] = []
 
-  // Remove SVG elements (not renderable in docx)
-  let processedHtml = html.replace(/<svg[\s\S]*?<\/svg>/gi, '')
-  // Strip figure/chart container wrapper divs only (keep inner content)
-  processedHtml = processedHtml.replace(/<div[^>]*class="(?:figure-container|chart-container)"[^>]*>/gi, '')
+  // Strip figure/chart container wrapper divs only (keep inner content incl. SVGs)
+  let processedHtml = html.replace(/<div[^>]*class="(?:figure-container|chart-container)"[^>]*>/gi, '')
+
+  // Extract SVGs — convert to PNG and replace with indexed placeholders
+  const svgImages: Array<{ buffer: Buffer; width: number; height: number } | null> = []
+  processedHtml = processedHtml.replace(/<svg[\s\S]*?<\/svg>/gi, (svgMatch) => {
+    svgImages.push(null) // placeholder, filled after async conversion
+    return `\n__SVG_${svgImages.length - 1}__\n`
+  })
+  // Now convert all SVGs to PNG in parallel
+  const svgStrings: string[] = []
+  html.replace(/<svg[\s\S]*?<\/svg>/gi, (m) => { svgStrings.push(m); return '' })
+  const converted = await Promise.all(svgStrings.map(s => svgToPng(s)))
+  converted.forEach((r, i) => { svgImages[i] = r })
 
   // Extract tables — replace with placeholders
   const tables: string[] = []
@@ -210,6 +239,32 @@ function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
           })
         )
       }
+    } else if (seg.match(/^__SVG_(\d+)__$/)) {
+      const idx = parseInt(seg.match(/^__SVG_(\d+)__$/)![1])
+      const img = svgImages[idx]
+      if (img) {
+        elements.push(
+          new Paragraph({
+            children: [
+              new ImageRun({
+                data: img.buffer,
+                transformation: { width: img.width, height: img.height },
+                type: 'png',
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 120, after: 120 },
+          })
+        )
+      } else {
+        elements.push(
+          new Paragraph({
+            children: [new TextRun({ text: '[Figure]', italics: true, size: 20, font: 'Times New Roman' })],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 120, after: 120 },
+          })
+        )
+      }
     } else if (seg.startsWith('__LI__')) {
       elements.push(
         new Paragraph({
@@ -345,8 +400,8 @@ export async function POST(request: Request) {
     if (isTwoColumn) {
       // Split into front matter (single-column) and body (two-column)
       const { frontMatter, body } = splitFrontMatterAndBody(content)
-      const frontMatterElements = htmlToDocxParagraphs(frontMatter)
-      const bodyElements = htmlToDocxParagraphs(body)
+      const frontMatterElements = await htmlToDocxParagraphs(frontMatter)
+      const bodyElements = await htmlToDocxParagraphs(body)
 
       const pageProps = {
         page: {
@@ -382,7 +437,7 @@ export async function POST(request: Request) {
       })
     } else {
       // Single-column layout for all other formats
-      const paragraphs = htmlToDocxParagraphs(content)
+      const paragraphs = await htmlToDocxParagraphs(content)
       doc = new Document({
         sections: [{
           properties: {
