@@ -27,21 +27,29 @@ function splitFrontMatterAndBody(html: string): { frontMatter: string; body: str
     return match.replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '')
   })
 
-  // Find all <h2> positions and pick the first one that is NOT the Abstract heading
-  const h2Regex = /<h2[^>]*>/gi
-  let h2Match: RegExpExecArray | null
-  while ((h2Match = h2Regex.exec(processed)) !== null) {
-    // Check the text content of this h2
-    const afterH2 = processed.slice(h2Match.index, h2Match.index + 200)
-    if (/abstract/i.test(afterH2)) continue // skip Abstract heading
-    // This is the first body section heading (e.g., "I. INTRODUCTION")
+  // Strategy: find first numbered section heading (I., II., III., etc.)
+  // Everything before it = front matter, everything after = body
+  const bodyStartRegex = /<h2[^>]*>\s*(I\.|II\.|III\.|IV\.|V\.|VI\.|VII\.|VIII\.|IX\.|X\.|1\.|2\.)/i
+  const bodyMatch = bodyStartRegex.exec(processed)
+
+  if (bodyMatch && bodyMatch.index > 0) {
     return {
-      frontMatter: processed.slice(0, h2Match.index).trim(),
-      body: processed.slice(h2Match.index).trim(),
+      frontMatter: processed.slice(0, bodyMatch.index).trim(),
+      body: processed.slice(bodyMatch.index).trim(),
     }
   }
 
-  // Fallback: everything is body
+  // Fallback: first <h2> that is NOT Abstract
+  const fallbackRegex = /<h2[^>]*>(?!\s*Abstract)/i
+  const fallbackMatch = fallbackRegex.exec(processed)
+  if (fallbackMatch && fallbackMatch.index > 0) {
+    return {
+      frontMatter: processed.slice(0, fallbackMatch.index).trim(),
+      body: processed.slice(fallbackMatch.index).trim(),
+    }
+  }
+
+  // No split possible — everything is body
   return { frontMatter: '', body: processed }
 }
 

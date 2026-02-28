@@ -37,9 +37,26 @@ const ieeetwocolumncss = `
     box-decoration-break: clone;
   }
   .front-matter { 
-    text-align: center; 
     margin-bottom: 1em;
     column-span: all;
+  }
+  .front-matter h1 {
+    text-align: center;
+  }
+  .front-matter h2 {
+    text-align: center;
+    font-size: 12pt;
+    text-transform: uppercase;
+  }
+  .front-matter p {
+    text-align: justify;
+    text-indent: 0;
+  }
+  .front-matter .keywords {
+    text-align: left;
+    font-size: 9pt;
+    margin: 0.5em 0 1em 0;
+    text-indent: 0;
   }
   h1 { 
     font-size: 14pt; 
@@ -87,15 +104,16 @@ const ieeetwocolumncss = `
     widows: 3;
   }
   p:first-of-type { text-indent: 0; }
-  .keywords { font-size: 9pt; margin: 0.5em 0 1em 0; text-indent: 0; column-span: all; }
+  .keywords { font-size: 9pt; margin: 0.5em 0 1em 0; text-indent: 0; }
   
-  /* Tables span full width */
+  /* Tables — break out of column flow */
   table { 
     width: 100%; 
     border-collapse: collapse; 
     margin: 0.6em 0; 
     font-size: 8pt;
     break-inside: avoid;
+    column-span: all;
   }
   table th, table td { 
     border: 1px solid #000; 
@@ -110,7 +128,8 @@ const ieeetwocolumncss = `
     font-size: 9pt; 
     margin: 0.8em 0 0.2em 0; 
     font-variant: small-caps; 
-    text-indent: 0; 
+    text-indent: 0;
+    column-span: all;
   }
   
   /* Figures */
@@ -118,7 +137,7 @@ const ieeetwocolumncss = `
     background: #fafafa; 
     border: 1px solid #999; 
     padding: 0.6em; 
-    margin: 0.6em 0; 
+    margin: 0.6em auto; 
     font-family: 'Courier New', monospace; 
     font-size: 7pt; 
     line-height: 1.2; 
@@ -126,13 +145,16 @@ const ieeetwocolumncss = `
     white-space: pre; 
     overflow: visible;
     break-inside: avoid;
+    column-span: all;
+    max-width: 90%;
   }
   .fig-caption { 
     text-align: center; 
     font-style: italic; 
     font-size: 8pt; 
     margin: 0.2em 0 0.6em 0; 
-    text-indent: 0; 
+    text-indent: 0;
+    column-span: all;
   }
   
   ul, ol { margin: 0.4em 0 0.4em 1.5em; font-size: 9pt; }
@@ -140,11 +162,36 @@ const ieeetwocolumncss = `
   strong { font-weight: bold; }
   em { font-style: italic; }
   
-  /* SVG Charts & Figures */
-  .figure-container { text-align: center; margin: 0.8em 0; break-inside: avoid; column-span: all; }
-  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
-  .chart-container { text-align: center; margin: 0.8em 0; break-inside: avoid; }
-  .chart-container svg { max-width: 100%; height: auto; }
+  /* SVG Charts & Figures — span both columns */
+  .figure-container { 
+    text-align: center; 
+    margin: 0.8em auto; 
+    break-inside: avoid; 
+    column-span: all;
+    max-width: 90%;
+  }
+  .figure-container svg { 
+    max-width: 100%; 
+    height: auto; 
+    display: block; 
+    margin: 0 auto;
+  }
+  .figure-container .fig-caption {
+    column-span: none;
+  }
+  .chart-container { 
+    text-align: center; 
+    margin: 0.8em auto; 
+    break-inside: avoid;
+    column-span: all;
+    max-width: 90%;
+  }
+  .chart-container svg { 
+    max-width: 100%; 
+    height: auto; 
+    display: block;
+    margin: 0 auto;
+  }
 `
 
 // IEEE Single Column Format
@@ -488,69 +535,36 @@ export function getFormatCss(formatId: string): string {
 }
 
 export function wrapContentForFormat(content: string, formatId: string): string {
-  // For two-column format, wrap body content after front matter
+  // For two-column format, split into full-width front-matter and two-column body
   if (formatId === 'ieee-two-column') {
-    // Extract title (h1 element)
-    const titleMatch = content.match(/(<h1[^>]*>[\s\S]*?<\/h1>)/i)
+    // Strategy: everything before the first numbered section heading (I. INTRODUCTION)
+    // goes into single-column front-matter. The rest goes into two-column body.
+    // Numbered headings: <h2> containing Roman numerals like "I.", "II.", "III." etc.
+    const bodyStartRegex = /<h2[^>]*>\s*(I\.|II\.|III\.|IV\.|V\.|VI\.|VII\.|VIII\.|IX\.|X\.|1\.|2\.)/i
+    const bodyMatch = bodyStartRegex.exec(content)
     
-    // Extract author block - handle both class-based and direct structure
-    const authorBlockMatch = content.match(/(<div class="author-block">[\s\S]*?<\/div>)/i)
+    let frontMatter = ''
+    let bodyContent = ''
     
-    // Also try to find author info if not in div.author-block
-    // Look for content between h1 and h2 (Abstract) - this is typically author info
-    let authorContent = ''
-    if (!authorBlockMatch) {
-      // Try to find author-related paragraphs (author name, affiliation patterns)
-      const authorPatterns = content.match(/(<p class="author[^"]*"[^>]*>[\s\S]*?<\/p>)/gi)
-      if (authorPatterns) {
-        authorContent = authorPatterns.join('\n')
-      }
-    }
-    
-    // Extract keywords
-    const keywordsMatch = content.match(/(<p[^>]*class="keywords"[^>]*>[\s\S]*?<\/p>)/i)
-    
-    const title = titleMatch ? titleMatch[1] : ''
-    const author = authorBlockMatch ? authorBlockMatch[1] : (authorContent ? `<div class="author-block">${authorContent}</div>` : '')
-    const keywords = keywordsMatch ? keywordsMatch[1] : ''
-    
-    // Extract abstract: find the Abstract <h2> and capture everything until the next <h2>
-    let abstract = ''
-    const absHeadMatch = content.match(/<h2[^>]*>[\s\S]*?Abstract[\s\S]*?<\/h2>/i)
-    if (absHeadMatch) {
-      const absStart = absHeadMatch.index!
-      // Find the next <h2> after the abstract heading
-      const afterAbsHead = content.slice(absStart + absHeadMatch[0].length)
-      const nextH2 = afterAbsHead.search(/<h2[^>]*>/i)
-      if (nextH2 !== -1) {
-        abstract = content.slice(absStart, absStart + absHeadMatch[0].length + nextH2).trim()
+    if (bodyMatch && bodyMatch.index > 0) {
+      frontMatter = content.slice(0, bodyMatch.index).trim()
+      bodyContent = content.slice(bodyMatch.index).trim()
+    } else {
+      // Fallback: try to find first <h2> that is NOT "Abstract"
+      const fallbackRegex = /<h2[^>]*>(?!\s*Abstract)/i
+      const fallbackMatch = fallbackRegex.exec(content)
+      if (fallbackMatch && fallbackMatch.index > 0) {
+        frontMatter = content.slice(0, fallbackMatch.index).trim()
+        bodyContent = content.slice(fallbackMatch.index).trim()
       } else {
-        abstract = content.slice(absStart).trim()
+        // No split possible — everything goes single-column
+        return `<div class="page-frame">${content}</div>`
       }
     }
-    
-    // Remove front matter elements from content for the two-column section
-    let bodyContent = content
-    if (title) bodyContent = bodyContent.replace(title, '')
-    if (authorBlockMatch) bodyContent = bodyContent.replace(authorBlockMatch[1], '')
-    if (authorContent) {
-      const authorPatterns = content.match(/(<p class="author[^"]*"[^>]*>[\s\S]*?<\/p>)/gi)
-      if (authorPatterns) {
-        authorPatterns.forEach(p => { bodyContent = bodyContent.replace(p, '') })
-      }
-    }
-    if (keywords) bodyContent = bodyContent.replace(keywords, '')
-    if (abstract) bodyContent = bodyContent.replace(abstract, '')
-    
-    // Clean up any leading whitespace/newlines
-    bodyContent = bodyContent.trim()
     
     return `<div class="page-frame">
       <div class="front-matter">
-        ${title}
-        ${author}
-        ${abstract}
-        ${keywords}
+        ${frontMatter}
       </div>
       <div class="two-column">
         ${bodyContent}
