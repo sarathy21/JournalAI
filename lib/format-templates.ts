@@ -37,26 +37,11 @@ const ieeetwocolumncss = `
     box-decoration-break: clone;
   }
   .front-matter { 
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
     column-span: all;
   }
   .front-matter h1 {
     text-align: center;
-  }
-  .front-matter h2 {
-    text-align: center;
-    font-size: 12pt;
-    text-transform: uppercase;
-  }
-  .front-matter p {
-    text-align: justify;
-    text-indent: 0;
-  }
-  .front-matter .keywords {
-    text-align: left;
-    font-size: 9pt;
-    margin: 0.5em 0 1em 0;
-    text-indent: 0;
   }
   h1 { 
     font-size: 14pt; 
@@ -537,25 +522,25 @@ export function getFormatCss(formatId: string): string {
 export function wrapContentForFormat(content: string, formatId: string): string {
   // For two-column format, split into full-width front-matter and two-column body
   if (formatId === 'ieee-two-column') {
-    // Strategy: everything before the first numbered section heading (I. INTRODUCTION)
-    // goes into single-column front-matter. The rest goes into two-column body.
-    // Numbered headings: <h2> containing Roman numerals like "I.", "II.", "III." etc.
-    const bodyStartRegex = /<h2[^>]*>\s*(I\.|II\.|III\.|IV\.|V\.|VI\.|VII\.|VIII\.|IX\.|X\.|1\.|2\.)/i
-    const bodyMatch = bodyStartRegex.exec(content)
+    // Strategy: Only title + author-block go into single-column front-matter.
+    // Abstract, keywords, and all numbered sections go into two-column body.
+    // Find the closing </div> of the author-block, split right after it.
+    const authorBlockRegex = /<div[^>]*class="author-block"[^>]*>[\s\S]*?<\/div>/i
+    const authorMatch = authorBlockRegex.exec(content)
     
     let frontMatter = ''
     let bodyContent = ''
     
-    if (bodyMatch && bodyMatch.index > 0) {
-      frontMatter = content.slice(0, bodyMatch.index).trim()
-      bodyContent = content.slice(bodyMatch.index).trim()
+    if (authorMatch) {
+      const splitIndex = authorMatch.index + authorMatch[0].length
+      frontMatter = content.slice(0, splitIndex).trim()
+      bodyContent = content.slice(splitIndex).trim()
     } else {
-      // Fallback: try to find first <h2> that is NOT "Abstract"
-      const fallbackRegex = /<h2[^>]*>(?!\s*Abstract)/i
-      const fallbackMatch = fallbackRegex.exec(content)
-      if (fallbackMatch && fallbackMatch.index > 0) {
-        frontMatter = content.slice(0, fallbackMatch.index).trim()
-        bodyContent = content.slice(fallbackMatch.index).trim()
+      // Fallback: find first <h2> (likely Abstract) and split before it
+      const firstH2 = /<h2[^>]*>/i.exec(content)
+      if (firstH2 && firstH2.index > 0) {
+        frontMatter = content.slice(0, firstH2.index).trim()
+        bodyContent = content.slice(firstH2.index).trim()
       } else {
         // No split possible — everything goes single-column
         return `<div class="page-frame">${content}</div>`
