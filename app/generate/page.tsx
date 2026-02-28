@@ -191,27 +191,44 @@ export default function GeneratePage() {
     if (!editedContent) return
     const titleMatch = editedContent.match(/<h1[^>]*>(?:Title:\s*)?(.*?)<\/h1>/i)
     const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : 'Paper'
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
     
     // Get CSS for selected format and wrap content appropriately
     const formatCss = getFormatCss(selectedFormat)
     const wrappedContent = wrapContentForFormat(editedContent, selectedFormat)
     
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${title}</title>
-          <style>
-            ${formatCss}
-          </style>
-        </head>
-        <body>${wrappedContent}</body>
-      </html>
-    `)
-    printWindow.document.close()
-    printWindow.print()
+    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <title>${title}</title>
+  <style>${formatCss}</style>
+</head>
+<body>${wrappedContent}</body>
+</html>`
+    
+    // Use a hidden iframe to trigger print on the same page
+    let iframe = document.getElementById('pdf-print-frame') as HTMLIFrameElement | null
+    if (!iframe) {
+      iframe = document.createElement('iframe')
+      iframe.id = 'pdf-print-frame'
+      iframe.style.position = 'fixed'
+      iframe.style.right = '0'
+      iframe.style.bottom = '0'
+      iframe.style.width = '0'
+      iframe.style.height = '0'
+      iframe.style.border = 'none'
+      document.body.appendChild(iframe)
+    }
+    
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+    if (!iframeDoc) return
+    iframeDoc.open()
+    iframeDoc.write(htmlContent)
+    iframeDoc.close()
+    
+    // Wait for content to render then trigger print
+    setTimeout(() => {
+      iframe!.contentWindow?.print()
+    }, 500)
   }
 
   const estimatedPages = generationOptions

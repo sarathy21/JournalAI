@@ -43,6 +43,25 @@ const ieeetwocolumncss = `
   .front-matter h1 {
     text-align: center;
   }
+  .front-matter h2 {
+    text-align: center;
+    font-size: 12pt;
+    text-transform: uppercase;
+    margin: 0.8em 0 0.3em 0;
+  }
+  .front-matter p {
+    text-align: justify;
+    text-indent: 0;
+    margin: 0 0 0.4em 0;
+  }
+  .front-matter .keywords {
+    text-align: left;
+    font-size: 9pt;
+    margin: 0.3em 0 0.8em 0;
+    text-indent: 0;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5em;
+  }
   h1 { 
     font-size: 14pt; 
     text-align: center; 
@@ -91,14 +110,13 @@ const ieeetwocolumncss = `
   p:first-of-type { text-indent: 0; }
   .keywords { font-size: 9pt; margin: 0.5em 0 1em 0; text-indent: 0; }
   
-  /* Tables — break out of column flow */
+  /* Tables — stay inside column */
   table { 
     width: 100%; 
     border-collapse: collapse; 
     margin: 0.6em 0; 
     font-size: 8pt;
     break-inside: avoid;
-    column-span: all;
   }
   table th, table td { 
     border: 1px solid #000; 
@@ -114,10 +132,9 @@ const ieeetwocolumncss = `
     margin: 0.8em 0 0.2em 0; 
     font-variant: small-caps; 
     text-indent: 0;
-    column-span: all;
   }
   
-  /* Figures */
+  /* Figures — stay inside column */
   pre.figure { 
     background: #fafafa; 
     border: 1px solid #999; 
@@ -130,8 +147,7 @@ const ieeetwocolumncss = `
     white-space: pre; 
     overflow: visible;
     break-inside: avoid;
-    column-span: all;
-    max-width: 90%;
+    width: 100%;
   }
   .fig-caption { 
     text-align: center; 
@@ -139,7 +155,6 @@ const ieeetwocolumncss = `
     font-size: 8pt; 
     margin: 0.2em 0 0.6em 0; 
     text-indent: 0;
-    column-span: all;
   }
   
   ul, ol { margin: 0.4em 0 0.4em 1.5em; font-size: 9pt; }
@@ -147,13 +162,12 @@ const ieeetwocolumncss = `
   strong { font-weight: bold; }
   em { font-style: italic; }
   
-  /* SVG Charts & Figures — span both columns */
+  /* SVG Charts & Figures — stay inside column, do NOT span */
   .figure-container { 
     text-align: center; 
     margin: 0.8em auto; 
     break-inside: avoid; 
-    column-span: all;
-    max-width: 90%;
+    width: 100%;
   }
   .figure-container svg { 
     max-width: 100%; 
@@ -162,14 +176,17 @@ const ieeetwocolumncss = `
     margin: 0 auto;
   }
   .figure-container .fig-caption {
-    column-span: none;
+    text-align: center;
+    font-style: italic;
+    font-size: 8pt;
+    margin: 0.2em 0 0.4em 0;
+    text-indent: 0;
   }
   .chart-container { 
     text-align: center; 
     margin: 0.8em auto; 
     break-inside: avoid;
-    column-span: all;
-    max-width: 90%;
+    width: 100%;
   }
   .chart-container svg { 
     max-width: 100%; 
@@ -522,25 +539,24 @@ export function getFormatCss(formatId: string): string {
 export function wrapContentForFormat(content: string, formatId: string): string {
   // For two-column format, split into full-width front-matter and two-column body
   if (formatId === 'ieee-two-column') {
-    // Strategy: Only title + author-block go into single-column front-matter.
-    // Abstract, keywords, and all numbered sections go into two-column body.
-    // Find the closing </div> of the author-block, split right after it.
-    const authorBlockRegex = /<div[^>]*class="author-block"[^>]*>[\s\S]*?<\/div>/i
-    const authorMatch = authorBlockRegex.exec(content)
+    // Strategy: Title + Authors + Abstract + Keywords go into single-column front-matter.
+    // Everything from the first numbered section heading (I., II., etc.) goes into two-column body.
+    const bodyStartRegex = /<h2[^>]*>\s*(I\.|II\.|III\.|IV\.|V\.|VI\.|VII\.|VIII\.|IX\.|X\.|1\.|2\.)/i
+    const bodyMatch = bodyStartRegex.exec(content)
     
     let frontMatter = ''
     let bodyContent = ''
     
-    if (authorMatch) {
-      const splitIndex = authorMatch.index + authorMatch[0].length
-      frontMatter = content.slice(0, splitIndex).trim()
-      bodyContent = content.slice(splitIndex).trim()
+    if (bodyMatch && bodyMatch.index > 0) {
+      frontMatter = content.slice(0, bodyMatch.index).trim()
+      bodyContent = content.slice(bodyMatch.index).trim()
     } else {
-      // Fallback: find first <h2> (likely Abstract) and split before it
-      const firstH2 = /<h2[^>]*>/i.exec(content)
-      if (firstH2 && firstH2.index > 0) {
-        frontMatter = content.slice(0, firstH2.index).trim()
-        bodyContent = content.slice(firstH2.index).trim()
+      // Fallback: find first <h2> that is NOT Abstract
+      const fallbackRegex = /<h2[^>]*>(?!\s*Abstract)/i
+      const fallbackMatch = fallbackRegex.exec(content)
+      if (fallbackMatch && fallbackMatch.index > 0) {
+        frontMatter = content.slice(0, fallbackMatch.index).trim()
+        bodyContent = content.slice(fallbackMatch.index).trim()
       } else {
         // No split possible — everything goes single-column
         return `<div class="page-frame">${content}</div>`

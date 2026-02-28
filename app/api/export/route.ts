@@ -16,8 +16,8 @@ import {
 
 /**
  * Split HTML content into front-matter elements and body elements.
- * Front matter: h1, author-block (title + authors only)
- * Body: abstract, keywords, and all numbered sections (in two-column)
+ * Front matter: h1, author-block, abstract, keywords (single-column)
+ * Body: numbered sections I. onward (two-column)
  */
 /** Convert SVG string to PNG buffer, scaled to maxWidth, returns null on failure */
 async function svgToPng(
@@ -45,25 +45,25 @@ function splitFrontMatterAndBody(html: string): { frontMatter: string; body: str
     return match.replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '')
   })
 
-  // Strategy: Only title + author-block go into single-column front-matter.
-  // Abstract, keywords, and all sections go into two-column body.
-  const authorBlockRegex = /<div[^>]*class="author-block"[^>]*>[\s\S]*?<\/div>/i
-  const authorMatch = authorBlockRegex.exec(processed)
+  // Strategy: Title + Authors + Abstract + Keywords go into single-column front-matter.
+  // Everything from the first numbered section heading goes into two-column body.
+  const bodyStartRegex = /<h2[^>]*>\s*(I\.|II\.|III\.|IV\.|V\.|VI\.|VII\.|VIII\.|IX\.|X\.|1\.|2\.)/i
+  const bodyMatch = bodyStartRegex.exec(processed)
 
-  if (authorMatch) {
-    const splitIndex = authorMatch.index + authorMatch[0].length
+  if (bodyMatch && bodyMatch.index > 0) {
     return {
-      frontMatter: processed.slice(0, splitIndex).trim(),
-      body: processed.slice(splitIndex).trim(),
+      frontMatter: processed.slice(0, bodyMatch.index).trim(),
+      body: processed.slice(bodyMatch.index).trim(),
     }
   }
 
-  // Fallback: find first <h2> and split before it
-  const firstH2 = /<h2[^>]*>/i.exec(processed)
-  if (firstH2 && firstH2.index > 0) {
+  // Fallback: first <h2> that is NOT Abstract
+  const fallbackRegex = /<h2[^>]*>(?!\s*Abstract)/i
+  const fallbackMatch = fallbackRegex.exec(processed)
+  if (fallbackMatch && fallbackMatch.index > 0) {
     return {
-      frontMatter: processed.slice(0, firstH2.index).trim(),
-      body: processed.slice(firstH2.index).trim(),
+      frontMatter: processed.slice(0, fallbackMatch.index).trim(),
+      body: processed.slice(fallbackMatch.index).trim(),
     }
   }
 
