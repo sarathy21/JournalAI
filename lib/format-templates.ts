@@ -518,6 +518,10 @@ export function wrapContentForFormat(content: string, formatId: string): string 
     const author = authorBlockMatch ? authorBlockMatch[1] : (authorContent ? `<div class="author-block">${authorContent}</div>` : '')
     const keywords = keywordsMatch ? keywordsMatch[1] : ''
     
+    // Extract abstract (header + all content until next <h2>)
+    const abstractMatch = content.match(/(<h2[^>]*>[\s\S]*?Abstract[\s\S]*?<\/h2>[\s\S]*?)(?=<h2[^>]*>(?![\s\S]*?Abstract)|$)/i)
+    const abstract = abstractMatch ? abstractMatch[1].trim() : ''
+    
     // Remove front matter elements from content for the two-column section
     let bodyContent = content
     if (title) bodyContent = bodyContent.replace(title, '')
@@ -529,6 +533,7 @@ export function wrapContentForFormat(content: string, formatId: string): string 
       }
     }
     if (keywords) bodyContent = bodyContent.replace(keywords, '')
+    if (abstract) bodyContent = bodyContent.replace(abstract, '')
     
     // Clean up any leading whitespace/newlines
     bodyContent = bodyContent.trim()
@@ -537,6 +542,7 @@ export function wrapContentForFormat(content: string, formatId: string): string 
       <div class="front-matter">
         ${title}
         ${author}
+        ${abstract}
         ${keywords}
       </div>
       <div class="two-column">
