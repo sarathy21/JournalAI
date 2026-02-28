@@ -510,17 +510,24 @@ export function wrapContentForFormat(content: string, formatId: string): string 
     // Extract keywords
     const keywordsMatch = content.match(/(<p[^>]*class="keywords"[^>]*>[\s\S]*?<\/p>)/i)
     
-    // Extract Abstract section header and content to keep full-width
-    const abstractHeaderMatch = content.match(/(<h2[^>]*>[\s\S]*?Abstract[\s\S]*?<\/h2>)/i)
-    const abstractContentMatch = content.match(/(<h2[^>]*>[\s\S]*?Abstract[\s\S]*?<\/h2>[\s\S]*?)(?=<h2|$)/i)
-    
     const title = titleMatch ? titleMatch[1] : ''
     const author = authorBlockMatch ? authorBlockMatch[1] : (authorContent ? `<div class="author-block">${authorContent}</div>` : '')
     const keywords = keywordsMatch ? keywordsMatch[1] : ''
     
-    // Extract abstract (header + all content until next <h2>)
-    const abstractMatch = content.match(/(<h2[^>]*>[\s\S]*?Abstract[\s\S]*?<\/h2>[\s\S]*?)(?=<h2[^>]*>(?![\s\S]*?Abstract)|$)/i)
-    const abstract = abstractMatch ? abstractMatch[1].trim() : ''
+    // Extract abstract: find the Abstract <h2> and capture everything until the next <h2>
+    let abstract = ''
+    const absHeadMatch = content.match(/<h2[^>]*>[\s\S]*?Abstract[\s\S]*?<\/h2>/i)
+    if (absHeadMatch) {
+      const absStart = absHeadMatch.index!
+      // Find the next <h2> after the abstract heading
+      const afterAbsHead = content.slice(absStart + absHeadMatch[0].length)
+      const nextH2 = afterAbsHead.search(/<h2[^>]*>/i)
+      if (nextH2 !== -1) {
+        abstract = content.slice(absStart, absStart + absHeadMatch[0].length + nextH2).trim()
+      } else {
+        abstract = content.slice(absStart).trim()
+      }
+    }
     
     // Remove front matter elements from content for the two-column section
     let bodyContent = content

@@ -74,11 +74,8 @@ export function GenerateForm({ onGenerate, isLoading }: GenerateFormProps) {
   const handleSubmit = () => {
     if (!topic.trim() || topic.trim().length < 5) return
     if (!authors[0].name.trim()) return
-    const fullTopic = description.trim()
-      ? `${topic.trim()}. Additional details: ${description.trim()}`
-      : topic.trim()
     onGenerate({
-      topic: fullTopic,
+      topic: topic.trim(),
       domain,
       citationStyle,
       wordCount,
@@ -87,7 +84,9 @@ export function GenerateForm({ onGenerate, isLoading }: GenerateFormProps) {
       affiliation: affiliation.trim(),
       department: department.trim(),
       college: college.trim(),
-      proposedIdea: proposedIdea.trim(),
+      proposedIdea: description.trim()
+        ? `${description.trim()}${proposedIdea.trim() ? '\n\n' + proposedIdea.trim() : ''}`
+        : proposedIdea.trim(),
     })
   }
 

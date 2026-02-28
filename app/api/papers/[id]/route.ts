@@ -38,7 +38,7 @@ export async function PATCH(
       return Response.json({ error: 'Content is required' }, { status: 400 })
     }
 
-    await updatePaper(id, content)
+    await updatePaper(id, userId, content)
     return Response.json({ success: true })
   } catch (error) {
     console.error('Update paper error:', error)
@@ -58,7 +58,7 @@ export async function DELETE(
   const { id } = await params
 
   try {
-    await deletePaper(id)
+    await deletePaper(id, userId)
     return Response.json({ success: true })
   } catch (error) {
     console.error('Delete paper error:', error)

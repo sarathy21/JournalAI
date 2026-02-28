@@ -166,7 +166,9 @@ export async function POST(request: Request) {
         }
       } catch (err) {
         console.error('Generation error:', err)
-        encode(`<p style="color:red">Error during generation: ${err instanceof Error ? err.message : String(err)}</p>`)
+        const errMsg = (err instanceof Error ? err.message : String(err))
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        encode(`<p style="color:red">Error during generation: ${errMsg}</p>`)
       } finally {
         controller.close()
       }

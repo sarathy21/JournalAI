@@ -102,7 +102,7 @@ export default function PaperPage() {
       const response = await fetch('/api/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, title: paper?.title || 'paper', format: 'docx' }),
+        body: JSON.stringify({ content, title: paper?.title || 'paper', format: 'docx', formatId: selectedFormat }),
       })
       if (!response.ok) throw new Error('Export failed')
       const blob = await response.blob()

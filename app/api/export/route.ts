@@ -10,14 +10,50 @@ import {
   TableRow,
   TableCell,
   WidthType,
-  BorderStyle,
+  SectionType,
 } from 'docx'
+
+/**
+ * Split HTML content into front-matter elements and body elements.
+ * Front matter: h1, author-block, abstract (h2+content), keywords
+ * Body: everything else (sections II onward)
+ */
+function splitFrontMatterAndBody(html: string): { frontMatter: string; body: string } {
+  // Remove SVG figures (cannot render in DOCX) but keep fig-captions
+  let processed = html.replace(/<svg[\s\S]*?<\/svg>/gi, '[Figure]')
+  // Remove figure-container/chart-container wrapper divs (opening + closing)
+  processed = processed.replace(/<div[^>]*class="(?:figure-container|chart-container)"[^>]*>[\s\S]*?<\/div>/gi, (match) => {
+    // Keep inner content (fig-captions etc) but strip the wrapper div
+    return match.replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '')
+  })
+
+  // Find all <h2> positions and pick the first one that is NOT the Abstract heading
+  const h2Regex = /<h2[^>]*>/gi
+  let h2Match: RegExpExecArray | null
+  while ((h2Match = h2Regex.exec(processed)) !== null) {
+    // Check the text content of this h2
+    const afterH2 = processed.slice(h2Match.index, h2Match.index + 200)
+    if (/abstract/i.test(afterH2)) continue // skip Abstract heading
+    // This is the first body section heading (e.g., "I. INTRODUCTION")
+    return {
+      frontMatter: processed.slice(0, h2Match.index).trim(),
+      body: processed.slice(h2Match.index).trim(),
+    }
+  }
+
+  // Fallback: everything is body
+  return { frontMatter: '', body: processed }
+}
 
 function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
   const elements: (Paragraph | Table)[] = []
 
+  // Remove SVG elements (not renderable in docx) but keep fig-captions
+  let processedHtml = html.replace(/<svg[\s\S]*?<\/svg>/gi, '')
+  // Remove figure-container wrapper divs
+  processedHtml = processedHtml.replace(/<div[^>]*class="(figure-container|chart-container)"[^>]*>/gi, '')
+
   // Extract and process tables first — replace with placeholders
-  let processedHtml = html
   const tables: string[] = []
   processedHtml = processedHtml.replace(/<table[^>]*>([\s\S]*?)<\/table>/gi, (match) => {
     tables.push(match)
@@ -33,10 +69,12 @@ function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
     .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n__H1__$1\n')
     .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n__H2__$1\n')
     .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n__H3__$1\n')
-    .replace(/<div[^>]*class="author-block"[^>]*>([\s\S]*?)<\/div>/gi, '\n__AUTHOR_BLOCK__$1__AUTHOR_END__\n')
+    .replace(/<div[^>]*class="author-block"[^>]*>([\s\S]*?)<\/div>/gi, '\n$1\n')
     .replace(/<p[^>]*class="table-caption"[^>]*>(.*?)<\/p>/gi, '\n__TABLE_CAPTION__$1\n')
     .replace(/<p[^>]*class="fig-caption"[^>]*>(.*?)<\/p>/gi, '\n__FIG_CAPTION__$1\n')
     .replace(/<p[^>]*class="author-name"[^>]*>(.*?)<\/p>/gi, '\n__AUTHOR_NAME__$1\n')
+    .replace(/<p[^>]*class="author-reg"[^>]*>(.*?)<\/p>/gi, '\n__AUTHOR_REG__$1\n')
+    .replace(/<p[^>]*class="author-affiliation"[^>]*>(.*?)<\/p>/gi, '\n__AUTHOR_AFFILIATION__$1\n')
     .replace(/<p[^>]*class="author-detail"[^>]*>(.*?)<\/p>/gi, '\n__AUTHOR_DETAIL__$1\n')
     .replace(/<p[^>]*class="keywords"[^>]*>(.*?)<\/p>/gi, '\n__KEYWORDS__$1\n')
     .replace(/<p[^>]*>(.*?)<\/p>/gi, '\n$1\n')
@@ -55,7 +93,7 @@ function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
     if (line.startsWith('__H1__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__H1__', ''), bold: true, size: 32, font: 'Times New Roman' })],
+          children: [new TextRun({ text: line.replace('__H1__', ''), bold: true, size: 28, font: 'Times New Roman' })],
           heading: HeadingLevel.HEADING_1,
           alignment: AlignmentType.CENTER,
           spacing: { after: 100 },
@@ -64,7 +102,7 @@ function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
     } else if (line.startsWith('__H2__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__H2__', ''), bold: true, size: 22, font: 'Times New Roman' })],
+          children: [new TextRun({ text: line.replace('__H2__', ''), bold: true, size: 24, font: 'Times New Roman' })],
           heading: HeadingLevel.HEADING_2,
           spacing: { before: 240, after: 80 },
         })
@@ -72,7 +110,7 @@ function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
     } else if (line.startsWith('__H3__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__H3__', ''), bold: true, italics: true, size: 20, font: 'Times New Roman' })],
+          children: [new TextRun({ text: line.replace('__H3__', ''), bold: true, italics: true, size: 22, font: 'Times New Roman' })],
           heading: HeadingLevel.HEADING_3,
           spacing: { before: 160, after: 60 },
         })
@@ -80,9 +118,25 @@ function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
     } else if (line.startsWith('__AUTHOR_NAME__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.replace('__AUTHOR_NAME__', ''), bold: true, size: 24, font: 'Times New Roman' })],
+          children: [new TextRun({ text: line.replace('__AUTHOR_NAME__', ''), bold: true, size: 20, font: 'Times New Roman' })],
           alignment: AlignmentType.CENTER,
-          spacing: { after: 40 },
+          spacing: { after: 20 },
+        })
+      )
+    } else if (line.startsWith('__AUTHOR_REG__')) {
+      elements.push(
+        new Paragraph({
+          children: [new TextRun({ text: line.replace('__AUTHOR_REG__', ''), size: 18, font: 'Times New Roman', color: '333333' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 10 },
+        })
+      )
+    } else if (line.startsWith('__AUTHOR_AFFILIATION__')) {
+      elements.push(
+        new Paragraph({
+          children: [new TextRun({ text: line.replace('__AUTHOR_AFFILIATION__', ''), italics: true, size: 18, font: 'Times New Roman', color: '333333' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 10 },
         })
       )
     } else if (line.startsWith('__AUTHOR_DETAIL__')) {
@@ -136,17 +190,34 @@ function htmlToDocxParagraphs(html: string): (Paragraph | Table)[] {
         )
       }
     } else {
+      // Parse inline formatting: <strong>, <em>, [N] citations
+      const runs = parseInlineFormatting(line.trim())
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: line.trim(), size: 20, font: 'Times New Roman' })],
+          children: runs,
           alignment: AlignmentType.JUSTIFIED,
           spacing: { after: 120 },
+          indent: { firstLine: 360 }, // 0.25 inch first-line indent
         })
       )
     }
   }
 
   return elements
+}
+
+/** Parse inline HTML formatting (<strong>, <em>) into TextRun array */
+function parseInlineFormatting(text: string): TextRun[] {
+  // Simple: just strip remaining tags and create a single run
+  // A more advanced approach would parse bold/italic spans
+  const clean = text
+    .replace(/<strong>(.*?)<\/strong>/gi, '$1')
+    .replace(/<em>(.*?)<\/em>/gi, '$1')
+    .replace(/<[^>]+>/g, '')
+    .trim()
+  
+  if (!clean) return [new TextRun({ text: ' ', size: 20, font: 'Times New Roman' })]
+  return [new TextRun({ text: clean, size: 20, font: 'Times New Roman' })]
 }
 
 function parseHtmlTable(tableHtml: string): Table | null {
@@ -202,28 +273,72 @@ export async function POST(request: Request) {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  const { content, title, format } = await request.json()
+  const { content, title, format, formatId } = await request.json()
 
   if (!content) {
     return new Response('Content is required', { status: 400 })
   }
 
   if (format === 'docx') {
-    const paragraphs = htmlToDocxParagraphs(content)
-    const doc = new Document({
-      sections: [{
-        properties: {
-          page: {
-            size: { width: 11906, height: 16838 }, // A4 in twips (1/1440 inch)
-            margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }, // 1 inch margins
-          },
+    const isTwoColumn = formatId === 'ieee-two-column'
+
+    let doc: Document
+
+    if (isTwoColumn) {
+      // Split into front matter (single-column) and body (two-column)
+      const { frontMatter, body } = splitFrontMatterAndBody(content)
+      const frontMatterElements = htmlToDocxParagraphs(frontMatter)
+      const bodyElements = htmlToDocxParagraphs(body)
+
+      const pageProps = {
+        page: {
+          size: { width: 11906, height: 16838 },
+          margin: { top: 1134, right: 1134, bottom: 1134, left: 1134 }, // ~0.79 inch (1cm)
         },
-        children: paragraphs,
-      }],
-    })
+      }
+
+      doc = new Document({
+        sections: [
+          // Section 1: Front matter — single column
+          {
+            properties: {
+              ...pageProps,
+              type: SectionType.CONTINUOUS,
+            },
+            children: frontMatterElements,
+          },
+          // Section 2: Body — two columns
+          {
+            properties: {
+              ...pageProps,
+              type: SectionType.CONTINUOUS,
+              column: {
+                space: 708, // ~0.5 inch gap between columns
+                count: 2,
+                separate: true,
+              },
+            },
+            children: bodyElements,
+          },
+        ],
+      })
+    } else {
+      // Single-column layout for all other formats
+      const paragraphs = htmlToDocxParagraphs(content)
+      doc = new Document({
+        sections: [{
+          properties: {
+            page: {
+              size: { width: 11906, height: 16838 },
+              margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 },
+            },
+          },
+          children: paragraphs,
+        }],
+      })
+    }
 
     const buffer = await Packer.toBuffer(doc)
-    // Convert to Uint8Array for Web API compatibility
     const uint8Array = new Uint8Array(buffer)
 
     return new Response(uint8Array, {
