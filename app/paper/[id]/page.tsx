@@ -120,27 +120,44 @@ export default function PaperPage() {
 
   const handleExportPdf = () => {
     if (!content) return
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
-
+    
     // Use the saved format template CSS and content wrapping
     const formatCss = getFormatCss(selectedFormat)
     const wrappedContent = wrapContentForFormat(content, selectedFormat)
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${paper?.title || 'Paper'}</title>
-          <style>
-            ${formatCss}
-          </style>
-        </head>
-        <body>${wrappedContent}</body>
-      </html>
-    `)
-    printWindow.document.close()
-    printWindow.print()
+    
+    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <title>${paper?.title || 'Paper'}</title>
+  <style>${formatCss}</style>
+</head>
+<body>${wrappedContent}</body>
+</html>`
+    
+    // Use a hidden iframe to trigger print on the same page
+    let iframe = document.getElementById('pdf-print-frame') as HTMLIFrameElement | null
+    if (!iframe) {
+      iframe = document.createElement('iframe')
+      iframe.id = 'pdf-print-frame'
+      iframe.style.position = 'fixed'
+      iframe.style.right = '0'
+      iframe.style.bottom = '0'
+      iframe.style.width = '0'
+      iframe.style.height = '0'
+      iframe.style.border = 'none'
+      document.body.appendChild(iframe)
+    }
+    
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+    if (!iframeDoc) return
+    iframeDoc.open()
+    iframeDoc.write(htmlContent)
+    iframeDoc.close()
+    
+    // Wait for content to render then trigger print
+    setTimeout(() => {
+      iframe!.contentWindow?.print()
+    }, 500)
   }
 
   const wordCount = content

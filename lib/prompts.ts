@@ -129,15 +129,15 @@ FORMAT RULES — follow every rule without exception:
    - PIE CHARTS: Use <svg> with <path> or <circle> elements using stroke-dasharray. Include percentage labels and a legend.
    - LINE GRAPHS: Use <svg> with <polyline> or <path> elements. Include axis labels and data point markers.
    - FLOWCHARTS / ARCHITECTURE DIAGRAMS: Use <svg> with <rect>, <text>, and <line> or <path> with marker-end arrows.
-   - All SVG must use viewBox for responsive sizing, e.g. viewBox="0 0 500 300".
-   - Use readable font sizes (12-14px) inside SVG <text> elements.
+   - All SVG must use viewBox for responsive sizing. Use viewBox="0 0 350 250" for charts that will appear inside a single column.
+   - Use readable font sizes (10-12px) inside SVG <text> elements.
    - Use distinct fill colors for each data series (e.g., #4285F4, #EA4335, #FBBC04, #34A853, #FF6D01, #46BDC6).
    - EVERY figure must have a descriptive <p class="fig-caption"> caption below it.
 9. Citations in IEEE style: [1], [2], [1]–[4]
 10. Each paragraph must be 120–200 words of substantive academic content.
 11. MANDATORY WORD COUNT: Every section system message specifies the minimum word count. YOU MUST reach that word count before stopping. If you run out of obvious content, add more analysis, examples, comparisons, or implications paragraphs. Do NOT stop early under any circumstances. Your output is automatically word-counted and sections below the minimum will be marked incomplete.
 12. When you think you are done — check if you have reached the minimum. If not, write more <p> paragraphs with deeper analysis until you do.
-13. Include at least 3-4 figures total across the paper: architecture/flow diagrams, bar charts, pie charts, or line graphs as appropriate for the content.`
+13. Include at least 6-8 figures total across the paper: architecture/flow diagrams, bar charts, pie charts, line graphs, or comparison charts as appropriate for the content. Every major section should have at least one figure.`
 
   const paperType = detectPaperType(topic, domain)
   const ctx: SectionBuildContext = { topic, domain, citationStyle, w, authorBlock, refCount, baseSystem, proposedIdea }
@@ -241,6 +241,17 @@ After this subsection, include:
 Write at least ${Math.round(w.litRev * 0.40)} words.
 Review 8–12 recent studies. For each: methodology, dataset, findings, limitations. Use ${citationStyle} citations.
 
+After this subsection, include a timeline / trend chart as an inline SVG:
+<div class="figure-container">
+<svg viewBox="0 0 350 220" xmlns="http://www.w3.org/2000/svg">
+  Draw an SVG line graph showing research publication trends over time for ${topic}.
+  X-axis: years (e.g. 2018–2025). Y-axis: number of publications or performance metric.
+  Use <polyline> or <path> with data point markers (<circle>). Include axis labels and a legend.
+  Use colors: #4285F4 line, #EA4335 for comparison line if applicable.
+</svg>
+<p class="fig-caption">Fig. 1. Research trends and publication growth in ${topic}</p>
+</div>
+
 <h3>C. Research Gaps</h3>
 Write at least ${Math.round(w.litRev * 0.30)} words.
 Identify 3+ specific gaps. For each, explain why it matters and how this paper fills it.
@@ -264,12 +275,12 @@ Write a 3-sentence overview of current/existing approaches to the problem.
 
 Then include an architecture/flow diagram of the existing system as an inline SVG:
 <div class="figure-container">
-<svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 350 280" xmlns="http://www.w3.org/2000/svg">
   Draw a detailed SVG flowchart of the existing system/approach with at least 5 components
   as rectangles connected by arrows (lines with arrowhead markers). Show the typical workflow, data flow, or architecture.
   Use fill colors like #E3F2FD, #FFF3E0, #E8F5E9 for boxes, #333 for text, and #666 for arrows.
 </svg>
-<p class="fig-caption">Fig. 1. Architecture of the existing system for ${topic}</p>
+<p class="fig-caption">Fig. 2. Architecture of the existing system for ${topic}</p>
 </div>
 
 Then write three subsections:
@@ -312,13 +323,13 @@ Write a 3-sentence overview of what is being proposed and why it is superior to 
 
 Then include the proposed system architecture as an inline SVG:
 <div class="figure-container">
-<svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 350 320" xmlns="http://www.w3.org/2000/svg">
   Draw a detailed SVG diagram of the proposed system architecture/methodology with at least 8 components.
   Use rectangles with rounded corners, arrows connecting them, and clear text labels.
   Use fill colors like #E8EAF6, #E0F7FA, #FFF9C4, #F3E5F5 for modules.
   Show data flow, processing stages, and key modules specific to the proposed approach for ${topic}.
 </svg>
-<p class="fig-caption">Fig. 2. Architecture of the proposed system for ${topic}</p>
+<p class="fig-caption">Fig. 3. Architecture of the proposed system for ${topic}</p>
 </div>
 
 Then write four subsections:
@@ -338,6 +349,14 @@ Describe tools, frameworks, libraries, hardware, and software used. Specify vers
 <h3>D. Novelty and Advantages Over Existing System</h3>
 Write at least ${Math.round(w.proposedWork * 0.20)} words.
 Explicitly compare the proposed approach with the existing system described in Section III. Highlight specific improvements. Include:
+
+<div class="figure-container">
+<svg viewBox="0 0 350 220" xmlns="http://www.w3.org/2000/svg">
+  Draw a grouped SVG bar chart comparing existing vs proposed system across at least 4 metrics.
+  Use pairs of bars (#EA4335 existing, #4285F4 proposed) with percentage labels on top, x-axis metric names, and a legend.
+</svg>
+<p class="fig-caption">Fig. 7. Quantitative comparison of existing vs proposed system</p>
+</div>
 
 <p class="table-caption">Table III: Comparison — Existing vs Proposed System</p>
 <table>
@@ -377,25 +396,36 @@ After this subsection, include:
 </table>
 
 <div class="figure-container">
-<svg viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 350 250" xmlns="http://www.w3.org/2000/svg">
   Draw an SVG bar chart comparing at least 4 methods/metrics. Use colored <rect> bars (e.g., #4285F4 for proposed, #EA4335 for baseline).
   Include x-axis labels, y-axis labels with gridlines, percentage values on top of each bar, and a legend.
 </svg>
-<p class="fig-caption">Fig. 3. Comparative performance of proposed vs baseline approaches</p>
+<p class="fig-caption">Fig. 4. Comparative performance of proposed vs baseline approaches</p>
 </div>
 
 Also include a pie chart showing the distribution of results or error categories:
 <div class="figure-container">
-<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 350 250" xmlns="http://www.w3.org/2000/svg">
   Draw an SVG pie chart with at least 4 segments using distinct colors (#4285F4, #EA4335, #FBBC04, #34A853).
   Include percentage labels on or near each segment and a legend on the right side.
 </svg>
-<p class="fig-caption">Fig. 4. Distribution of ${topic} results by category</p>
+<p class="fig-caption">Fig. 5. Distribution of ${topic} results by category</p>
 </div>
 
 <h3>B. Analysis and Interpretation</h3>
 Write at least ${Math.round(w.resultsDisc * 0.25)} words.
 Explain WHY results occurred. Discuss underlying causes, mechanisms, contributing factors. Address any unexpected findings.
+
+Include a line graph showing performance trends:
+<div class="figure-container">
+<svg viewBox="0 0 350 220" xmlns="http://www.w3.org/2000/svg">
+  Draw an SVG line graph with at least 2 lines (proposed method vs baseline).
+  X-axis: training epochs, iterations, or data size. Y-axis: performance metric.
+  Use <polyline> with different colors (#4285F4 proposed, #EA4335 baseline).
+  Include data point markers, axis labels, gridlines, and a legend.
+</svg>
+<p class="fig-caption">Fig. 6. Performance trend comparison of proposed and baseline methods</p>
+</div>
 
 <h3>C. Comparison with Existing Literature</h3>
 Write at least ${Math.round(w.resultsDisc * 0.25)} words.
