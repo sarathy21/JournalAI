@@ -45,10 +45,11 @@ export default function GeneratePage() {
     citationStyle: string
     wordCount: number
     pageCount: number
-    authorName: string
+    authors: { name: string; registerNumber: string }[]
+    affiliation: string
     department: string
     college: string
-    registerNumber: string
+    proposedIdea: string
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [wordCount, setWordCount] = useState(0)
@@ -66,10 +67,11 @@ export default function GeneratePage() {
       citationStyle: string
       wordCount: number
       pageCount: number
-      authorName: string
+      authors: { name: string; registerNumber: string }[]
+      affiliation: string
       department: string
       college: string
-      registerNumber: string
+      proposedIdea: string
     }) => {
       setIsGenerating(true)
       setError(null)
@@ -168,7 +170,7 @@ export default function GeneratePage() {
       const response = await fetch('/api/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: editedContent, title, format: 'docx' }),
+        body: JSON.stringify({ content: editedContent, title, format: 'docx', formatId: selectedFormat }),
       })
 
       if (!response.ok) throw new Error('Export failed')
@@ -213,7 +215,7 @@ export default function GeneratePage() {
   }
 
   const estimatedPages = generationOptions
-    ? Math.round(wordCount / 600)
+    ? Math.round(wordCount / 850)
     : 0
 
   return (

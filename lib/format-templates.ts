@@ -37,12 +37,14 @@ const ieeetwocolumncss = `
     box-decoration-break: clone;
   }
   .front-matter { 
-    text-align: center; 
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
     column-span: all;
   }
+  .front-matter h1 {
+    text-align: center;
+  }
   h1 { 
-    font-size: 18pt; 
+    font-size: 14pt; 
     text-align: center; 
     margin: 0 0 0.4em 0; 
     font-weight: bold; 
@@ -54,8 +56,10 @@ const ieeetwocolumncss = `
     margin: 0.3em 0 0.8em 0;
     column-span: all;
   }
-  .author-name { font-size: 11pt; font-weight: bold; margin: 0; }
-  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; }
+  .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; text-align: center; }
   
   /* Two-column content area */
   .two-column {
@@ -65,14 +69,14 @@ const ieeetwocolumncss = `
   }
   
   h2 { 
-    font-size: 11pt; 
+    font-size: 12pt; 
     margin: 1em 0 0.4em 0; 
     font-weight: bold; 
     text-transform: uppercase;
     column-span: none;
   }
   h3 { 
-    font-size: 10pt; 
+    font-size: 11pt; 
     margin: 0.8em 0 0.3em 0; 
     font-weight: bold; 
     font-style: italic; 
@@ -85,15 +89,16 @@ const ieeetwocolumncss = `
     widows: 3;
   }
   p:first-of-type { text-indent: 0; }
-  .keywords { font-size: 9pt; margin: 0.5em 0 1em 0; text-indent: 0; column-span: all; }
+  .keywords { font-size: 9pt; margin: 0.5em 0 1em 0; text-indent: 0; }
   
-  /* Tables span full width */
+  /* Tables — break out of column flow */
   table { 
     width: 100%; 
     border-collapse: collapse; 
     margin: 0.6em 0; 
     font-size: 8pt;
     break-inside: avoid;
+    column-span: all;
   }
   table th, table td { 
     border: 1px solid #000; 
@@ -108,7 +113,8 @@ const ieeetwocolumncss = `
     font-size: 9pt; 
     margin: 0.8em 0 0.2em 0; 
     font-variant: small-caps; 
-    text-indent: 0; 
+    text-indent: 0;
+    column-span: all;
   }
   
   /* Figures */
@@ -116,7 +122,7 @@ const ieeetwocolumncss = `
     background: #fafafa; 
     border: 1px solid #999; 
     padding: 0.6em; 
-    margin: 0.6em 0; 
+    margin: 0.6em auto; 
     font-family: 'Courier New', monospace; 
     font-size: 7pt; 
     line-height: 1.2; 
@@ -124,19 +130,53 @@ const ieeetwocolumncss = `
     white-space: pre; 
     overflow: visible;
     break-inside: avoid;
+    column-span: all;
+    max-width: 90%;
   }
   .fig-caption { 
     text-align: center; 
     font-style: italic; 
     font-size: 8pt; 
     margin: 0.2em 0 0.6em 0; 
-    text-indent: 0; 
+    text-indent: 0;
+    column-span: all;
   }
   
   ul, ol { margin: 0.4em 0 0.4em 1.5em; font-size: 9pt; }
   li { margin-bottom: 0.2em; }
   strong { font-weight: bold; }
   em { font-style: italic; }
+  
+  /* SVG Charts & Figures — span both columns */
+  .figure-container { 
+    text-align: center; 
+    margin: 0.8em auto; 
+    break-inside: avoid; 
+    column-span: all;
+    max-width: 90%;
+  }
+  .figure-container svg { 
+    max-width: 100%; 
+    height: auto; 
+    display: block; 
+    margin: 0 auto;
+  }
+  .figure-container .fig-caption {
+    column-span: none;
+  }
+  .chart-container { 
+    text-align: center; 
+    margin: 0.8em auto; 
+    break-inside: avoid;
+    column-span: all;
+    max-width: 90%;
+  }
+  .chart-container svg { 
+    max-width: 100%; 
+    height: auto; 
+    display: block;
+    margin: 0 auto;
+  }
 `
 
 // IEEE Single Column Format
@@ -165,19 +205,21 @@ const ieeeSingleColumnCss = `
     box-decoration-break: clone;
   }
   h1 { 
-    font-size: 16pt; 
+    font-size: 14pt; 
     text-align: center; 
     margin: 0 0 0.5em 0; 
     font-weight: bold; 
     text-transform: uppercase;
   }
   .author-block { text-align: center; margin: 0.3em 0 1em 0; }
-  .author-name { font-size: 12pt; font-weight: bold; margin: 0; }
-  .author-detail { font-size: 10pt; font-style: italic; margin: 0.1em 0; color: #333; }
+  .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; text-align: center; }
   .keywords { font-size: 10pt; margin: 0.5em 0 1.5em 0; }
   
-  h2 { font-size: 13pt; margin: 1.2em 0 0.5em 0; font-weight: bold; text-transform: uppercase; }
-  h3 { font-size: 12pt; margin: 1em 0 0.4em 0; font-weight: bold; font-style: italic; }
+  h2 { font-size: 12pt; margin: 1.2em 0 0.5em 0; font-weight: bold; text-transform: uppercase; }
+  h3 { font-size: 11pt; margin: 1em 0 0.4em 0; font-weight: bold; font-style: italic; }
   p { text-align: justify; margin: 0 0 0.8em 0; text-indent: 1.5em; }
   p:first-of-type { text-indent: 0; }
   
@@ -193,6 +235,12 @@ const ieeeSingleColumnCss = `
   li { margin-bottom: 0.3em; }
   strong { font-weight: bold; }
   em { font-style: italic; }
+  
+  /* SVG Charts & Figures */
+  .figure-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
+  .chart-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .chart-container svg { max-width: 100%; height: auto; }
 `
 
 // APA 7th Edition Format
@@ -233,12 +281,14 @@ const apaFormatCss = `
     font-weight: bold;
   }
   .author-block { text-align: center; margin: 1em 0 2em 0; line-height: 2; }
-  .author-name { font-size: 12pt; font-weight: normal; margin: 0; }
-  .author-detail { font-size: 12pt; font-style: normal; margin: 0; }
+  .author-name { font-size: 10pt; font-weight: normal; margin: 0; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0; text-align: center; }
+  .author-detail { font-size: 12pt; font-style: normal; margin: 0; text-align: center; }
   .keywords { font-size: 12pt; margin: 1em 0 2em 0; font-style: italic; }
   
   h2 { font-size: 12pt; margin: 1em 0 0; font-weight: bold; text-align: center; }
-  h3 { font-size: 12pt; margin: 1em 0 0; font-weight: bold; font-style: italic; text-align: left; }
+  h3 { font-size: 11pt; margin: 1em 0 0; font-weight: bold; font-style: italic; text-align: left; }
   p { text-align: left; margin: 0; text-indent: 0.5in; }
   
   table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 11pt; }
@@ -251,6 +301,12 @@ const apaFormatCss = `
   
   ul, ol { margin: 0 0 0 0.5in; }
   li { margin-bottom: 0; }
+  
+  /* SVG Charts & Figures */
+  .figure-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
+  .chart-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .chart-container svg { max-width: 100%; height: auto; }
 `
 
 // Modern Clean Format
@@ -288,7 +344,9 @@ const modernCleanCss = `
     padding-bottom: 0.3em;
   }
   .author-block { text-align: center; margin: 0.5em 0 1.5em 0; }
-  .author-name { font-size: 13pt; font-weight: 600; margin: 0; color: #374151; }
+  .author-name { font-size: 10pt; font-weight: 600; margin: 0.15em 0 0; color: #374151; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #6b7280; text-align: center; }
+  .author-affiliation { font-size: 9pt; margin: 0.05em 0; color: #6b7280; font-style: italic; text-align: center; }
   .author-detail { font-size: 10pt; margin: 0.2em 0; color: #6b7280; }
   .keywords { 
     font-size: 10pt; 
@@ -339,6 +397,12 @@ const modernCleanCss = `
   li { margin-bottom: 0.3em; }
   strong { font-weight: 600; }
   em { font-style: italic; }
+  
+  /* SVG Charts & Figures */
+  .figure-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
+  .chart-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .chart-container svg { max-width: 100%; height: auto; }
 `
 
 // Classic Academic Format
@@ -375,7 +439,9 @@ const classicAcademicCss = `
     letter-spacing: 2pt;
   }
   .author-block { text-align: center; margin: 1em 0 2em 0; }
-  .author-name { font-size: 12pt; font-weight: normal; font-variant: small-caps; margin: 0; }
+  .author-name { font-size: 10pt; font-weight: normal; font-variant: small-caps; margin: 0.15em 0 0; text-align: center; }
+  .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; text-align: center; }
   .author-detail { font-size: 10pt; font-style: italic; margin: 0.2em 0; }
   .keywords { font-size: 10pt; margin: 1em 0 2em 0; text-align: center; font-style: italic; }
   
@@ -402,6 +468,12 @@ const classicAcademicCss = `
   
   ul, ol { margin: 0.5em 0 1em 2em; }
   li { margin-bottom: 0.4em; }
+  
+  /* SVG Charts & Figures */
+  .figure-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .figure-container svg { max-width: 100%; height: auto; display: inline-block; }
+  .chart-container { text-align: center; margin: 1em auto; break-inside: avoid; }
+  .chart-container svg { max-width: 100%; height: auto; }
 `
 
 export const FORMAT_TEMPLATES: FormatTemplate[] = [
@@ -448,56 +520,36 @@ export function getFormatCss(formatId: string): string {
 }
 
 export function wrapContentForFormat(content: string, formatId: string): string {
-  // For two-column format, wrap body content after front matter
+  // For two-column format, split into full-width front-matter and two-column body
   if (formatId === 'ieee-two-column') {
-    // Extract title (h1 element)
-    const titleMatch = content.match(/(<h1[^>]*>[\s\S]*?<\/h1>)/i)
+    // Strategy: Only title + author-block go into single-column front-matter.
+    // Abstract, keywords, and all numbered sections go into two-column body.
+    // Find the closing </div> of the author-block, split right after it.
+    const authorBlockRegex = /<div[^>]*class="author-block"[^>]*>[\s\S]*?<\/div>/i
+    const authorMatch = authorBlockRegex.exec(content)
     
-    // Extract author block - handle both class-based and direct structure
-    const authorBlockMatch = content.match(/(<div class="author-block">[\s\S]*?<\/div>)/i)
+    let frontMatter = ''
+    let bodyContent = ''
     
-    // Also try to find author info if not in div.author-block
-    // Look for content between h1 and h2 (Abstract) - this is typically author info
-    let authorContent = ''
-    if (!authorBlockMatch) {
-      // Try to find author-related paragraphs (author name, affiliation patterns)
-      const authorPatterns = content.match(/(<p class="author[^"]*"[^>]*>[\s\S]*?<\/p>)/gi)
-      if (authorPatterns) {
-        authorContent = authorPatterns.join('\n')
+    if (authorMatch) {
+      const splitIndex = authorMatch.index + authorMatch[0].length
+      frontMatter = content.slice(0, splitIndex).trim()
+      bodyContent = content.slice(splitIndex).trim()
+    } else {
+      // Fallback: find first <h2> (likely Abstract) and split before it
+      const firstH2 = /<h2[^>]*>/i.exec(content)
+      if (firstH2 && firstH2.index > 0) {
+        frontMatter = content.slice(0, firstH2.index).trim()
+        bodyContent = content.slice(firstH2.index).trim()
+      } else {
+        // No split possible — everything goes single-column
+        return `<div class="page-frame">${content}</div>`
       }
     }
-    
-    // Extract keywords
-    const keywordsMatch = content.match(/(<p[^>]*class="keywords"[^>]*>[\s\S]*?<\/p>)/i)
-    
-    // Extract Abstract section header and content to keep full-width
-    const abstractHeaderMatch = content.match(/(<h2[^>]*>[\s\S]*?Abstract[\s\S]*?<\/h2>)/i)
-    const abstractContentMatch = content.match(/(<h2[^>]*>[\s\S]*?Abstract[\s\S]*?<\/h2>[\s\S]*?)(?=<h2|$)/i)
-    
-    const title = titleMatch ? titleMatch[1] : ''
-    const author = authorBlockMatch ? authorBlockMatch[1] : (authorContent ? `<div class="author-block">${authorContent}</div>` : '')
-    const keywords = keywordsMatch ? keywordsMatch[1] : ''
-    
-    // Remove front matter elements from content for the two-column section
-    let bodyContent = content
-    if (title) bodyContent = bodyContent.replace(title, '')
-    if (authorBlockMatch) bodyContent = bodyContent.replace(authorBlockMatch[1], '')
-    if (authorContent) {
-      const authorPatterns = content.match(/(<p class="author[^"]*"[^>]*>[\s\S]*?<\/p>)/gi)
-      if (authorPatterns) {
-        authorPatterns.forEach(p => { bodyContent = bodyContent.replace(p, '') })
-      }
-    }
-    if (keywords) bodyContent = bodyContent.replace(keywords, '')
-    
-    // Clean up any leading whitespace/newlines
-    bodyContent = bodyContent.trim()
     
     return `<div class="page-frame">
       <div class="front-matter">
-        ${title}
-        ${author}
-        ${keywords}
+        ${frontMatter}
       </div>
       <div class="two-column">
         ${bodyContent}

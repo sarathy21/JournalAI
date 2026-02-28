@@ -90,20 +90,22 @@ export async function getPaperById(id: string, userId: string) {
   return data
 }
 
-export async function updatePaper(id: string, content: string) {
+export async function updatePaper(id: string, userId: string, content: string) {
   const { error } = await getSupabaseAdmin()
     .from('papers')
     .update({ content, updated_at: new Date().toISOString() })
     .eq('id', id)
+    .eq('user_id', userId)
 
   if (error) throw error
 }
 
-export async function deletePaper(id: string) {
+export async function deletePaper(id: string, userId: string) {
   const { error } = await getSupabaseAdmin()
     .from('papers')
     .delete()
     .eq('id', id)
+    .eq('user_id', userId)
 
   if (error) throw error
 }
@@ -137,7 +139,6 @@ export async function syncUserToSupabase(clerkUser: {
       email: clerkUser.email ?? '',
       first_name: clerkUser.firstName ?? '',
       last_name: clerkUser.lastName ?? '',
-      avatar_url: clerkUser.imageUrl ?? '',
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'clerk_id' }
