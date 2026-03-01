@@ -16,7 +16,16 @@ const ieeetwocolumncss = `
   @page { 
     size: A4; 
     margin: 1cm;
-    @top-center { content: counter(page); font-size: 10pt; }
+    @top-left-corner  { content: ""; }
+    @top-left         { content: ""; }
+    @top-center       { content: ""; }
+    @top-right        { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner  { content: ""; }
+    @bottom-left         { content: ""; }
+    @bottom-center       { content: counter(page); font-size: 9pt; font-family: 'Times New Roman', serif; }
+    @bottom-right        { content: ""; }
+    @bottom-right-corner { content: ""; }
   }
   * { box-sizing: border-box; }
   body {
@@ -207,7 +216,16 @@ const ieeeSingleColumnCss = `
   @page { 
     size: A4; 
     margin: 1cm;
-    @top-center { content: counter(page); font-size: 10pt; }
+    @top-left-corner  { content: ""; }
+    @top-left         { content: ""; }
+    @top-center       { content: ""; }
+    @top-right        { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner  { content: ""; }
+    @bottom-left         { content: ""; }
+    @bottom-center       { content: counter(page); font-size: 10pt; font-family: 'Times New Roman', serif; }
+    @bottom-right        { content: ""; }
+    @bottom-right-corner { content: ""; }
   }
   * { box-sizing: border-box; }
   body {
@@ -271,7 +289,16 @@ const apaFormatCss = `
   @page { 
     size: A4; 
     margin: 1cm;
-    @top-right { content: counter(page); font-size: 12pt; font-family: 'Times New Roman'; }
+    @top-left-corner  { content: ""; }
+    @top-left         { content: ""; }
+    @top-center       { content: ""; }
+    @top-right        { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner  { content: ""; }
+    @bottom-left         { content: ""; }
+    @bottom-center       { content: counter(page); font-size: 12pt; font-family: 'Times New Roman', serif; }
+    @bottom-right        { content: ""; }
+    @bottom-right-corner { content: ""; }
   }
   * { box-sizing: border-box; }
   body {
@@ -337,6 +364,16 @@ const modernCleanCss = `
   @page { 
     size: A4; 
     margin: 1cm;
+    @top-left-corner  { content: ""; }
+    @top-left         { content: ""; }
+    @top-center       { content: ""; }
+    @top-right        { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner  { content: ""; }
+    @bottom-left         { content: ""; }
+    @bottom-center       { content: counter(page); font-size: 10pt; font-family: 'Calibri', Arial, sans-serif; }
+    @bottom-right        { content: ""; }
+    @bottom-right-corner { content: ""; }
   }
   * { box-sizing: border-box; }
   body {
@@ -433,7 +470,16 @@ const classicAcademicCss = `
   @page { 
     size: A4; 
     margin: 1cm;
-    @bottom-center { content: "— " counter(page) " —"; font-size: 10pt; font-family: 'Georgia'; }
+    @top-left-corner  { content: ""; }
+    @top-left         { content: ""; }
+    @top-center       { content: ""; }
+    @top-right        { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner  { content: ""; }
+    @bottom-left         { content: ""; }
+    @bottom-center       { content: "— " counter(page) " —"; font-size: 10pt; font-family: 'Georgia', serif; }
+    @bottom-right        { content: ""; }
+    @bottom-right-corner { content: ""; }
   }
   * { box-sizing: border-box; }
   body {
