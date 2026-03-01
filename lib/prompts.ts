@@ -123,16 +123,14 @@ FORMAT RULES — follow every rule without exception:
 5. IEEE section numbering: I. II. III. IV. V. VI. (Roman numerals)
 6. IEEE subsection lettering: A. B. C. (capital letters)
 7. Tables: <table> with <thead>/<tbody>/<tr>/<th>/<td>. Caption above: <p class="table-caption">Table I: Title</p>
-8. FIGURES & CHARTS — use inline SVG for visual elements (NOT ASCII art):
+8. FIGURES & CHARTS — use inline SVG. CRITICAL RULES:
    - Wrap every figure in: <div class="figure-container">...<p class="fig-caption">Fig. N. Caption</p></div>
-   - BAR CHARTS: Use <svg> with <rect> elements. Include axis labels, data labels, a legend, and gridlines.
-   - PIE CHARTS: Use <svg> with <path> or <circle> elements using stroke-dasharray. Include percentage labels and a legend.
-   - LINE GRAPHS: Use <svg> with <polyline> or <path> elements. Include axis labels and data point markers.
-   - FLOWCHARTS / ARCHITECTURE DIAGRAMS: Use <svg> with <rect>, <text>, and <line> or <path> with marker-end arrows.
-   - All SVG must use viewBox for responsive sizing. Use viewBox="0 0 350 250" for charts that will appear inside a single column.
-   - Use readable font sizes (10-12px) inside SVG <text> elements.
-   - Use distinct fill colors for each data series (e.g., #4285F4, #EA4335, #FBBC04, #34A853, #FF6D01, #46BDC6).
-   - EVERY figure must have a descriptive <p class="fig-caption"> caption below it.
+   - SVG elements MUST contain ONLY valid SVG markup: <rect>, <circle>, <line>, <polyline>, <path>, <text>, <defs>, <marker> etc.
+   - NEVER put English prose, instructions, or descriptions inside <svg>...</svg> tags. Only SVG elements.
+   - Use viewBox="0 0 350 250" for all figures. Always set xmlns="http://www.w3.org/2000/svg".
+   - Always include a <defs> section with arrowhead markers for flowcharts.
+   - Use font-size="10" or font-size="11" for all <text> elements inside SVG.
+   - Every figure must have a unique distinct color theme — do NOT use the same palette for different figures.
 9. Citations in IEEE style: [1], [2], [1]–[4]
 10. Each paragraph must be 120–200 words of substantive academic content.
 11. MANDATORY WORD COUNT: Every section system message specifies the minimum word count. YOU MUST reach that word count before stopping. If you run out of obvious content, add more analysis, examples, comparisons, or implications paragraphs. Do NOT stop early under any circumstances. Your output is automatically word-counted and sections below the minimum will be marked incomplete.
@@ -241,15 +239,48 @@ After this subsection, include:
 Write at least ${Math.round(w.litRev * 0.40)} words.
 Review 8–12 recent studies. For each: methodology, dataset, findings, limitations. Use ${citationStyle} citations.
 
-After this subsection, include a timeline / trend chart as an inline SVG:
+After this subsection, reproduce this SVG line chart (TEAL theme) adapted with real year labels and values for ${topic}:
 <div class="figure-container">
-<svg viewBox="0 0 350 220" xmlns="http://www.w3.org/2000/svg">
-  Draw an SVG line graph showing research publication trends over time for ${topic}.
-  X-axis: years (e.g. 2018–2025). Y-axis: number of publications or performance metric.
-  Use <polyline> or <path> with data point markers (<circle>). Include axis labels and a legend.
-  Use colors: #4285F4 line, #EA4335 for comparison line if applicable.
+<svg viewBox="0 0 350 230" xmlns="http://www.w3.org/2000/svg">
+  <rect width="350" height="230" fill="#E0F7FA" rx="4"/>
+  <text x="175" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="#006064">Publication Trends: ${topic}</text>
+  <!-- Y-axis -->
+  <line x1="50" y1="25" x2="50" y2="185" stroke="#00838F" stroke-width="1.5"/>
+  <!-- X-axis -->
+  <line x1="50" y1="185" x2="330" y2="185" stroke="#00838F" stroke-width="1.5"/>
+  <!-- Gridlines -->
+  <line x1="50" y1="65" x2="330" y2="65" stroke="#B2EBF2" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="50" y1="105" x2="330" y2="105" stroke="#B2EBF2" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="50" y1="145" x2="330" y2="145" stroke="#B2EBF2" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- Y labels -->
+  <text x="44" y="68" text-anchor="end" font-size="9" fill="#00838F">75</text>
+  <text x="44" y="108" text-anchor="end" font-size="9" fill="#00838F">50</text>
+  <text x="44" y="148" text-anchor="end" font-size="9" fill="#00838F">25</text>
+  <text x="44" y="188" text-anchor="end" font-size="9" fill="#00838F">0</text>
+  <text x="22" y="115" text-anchor="middle" font-size="9" fill="#006064" transform="rotate(-90,22,115)">Publications</text>
+  <!-- REPLACE x-label years and polyline points with actual trend data for ${topic} -->
+  <text x="80" y="200" text-anchor="middle" font-size="9" fill="#006064">2018</text>
+  <text x="120" y="200" text-anchor="middle" font-size="9" fill="#006064">2019</text>
+  <text x="160" y="200" text-anchor="middle" font-size="9" fill="#006064">2020</text>
+  <text x="200" y="200" text-anchor="middle" font-size="9" fill="#006064">2021</text>
+  <text x="240" y="200" text-anchor="middle" font-size="9" fill="#006064">2022</text>
+  <text x="280" y="200" text-anchor="middle" font-size="9" fill="#006064">2023</text>
+  <text x="320" y="200" text-anchor="middle" font-size="9" fill="#006064">2024</text>
+  <!-- Main trend line (REPLACE y-coords to reflect actual growth trend) -->
+  <polyline points="80,170 120,160 160,145 200,120 240,95 280,70 320,50" fill="none" stroke="#00838F" stroke-width="2.5"/>
+  <circle cx="80" cy="170" r="4" fill="#00838F"/><circle cx="120" cy="160" r="4" fill="#00838F"/>
+  <circle cx="160" cy="145" r="4" fill="#00838F"/><circle cx="200" cy="120" r="4" fill="#00838F"/>
+  <circle cx="240" cy="95" r="4" fill="#00838F"/><circle cx="280" cy="70" r="4" fill="#00838F"/>
+  <circle cx="320" cy="50" r="4" fill="#006064"/>
+  <!-- Optional second line for comparison domain -->
+  <polyline points="80,175 120,168 160,155 200,138 240,115 280,92 320,72" fill="none" stroke="#26C6DA" stroke-width="2" stroke-dasharray="5,3"/>
+  <!-- Legend -->
+  <line x1="60" y1="215" x2="80" y2="215" stroke="#00838F" stroke-width="2.5"/>
+  <text x="83" y="218" font-size="9" fill="#006064">${topic}</text>
+  <line x1="175" y1="215" x2="195" y2="215" stroke="#26C6DA" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="198" y="218" font-size="9" fill="#006064">Related field</text>
 </svg>
-<p class="fig-caption">Fig. 1. Research trends and publication growth in ${topic}</p>
+<p class="fig-caption">Fig. 1. Research publication trends in ${topic} (2018–2024)</p>
 </div>
 
 <h3>C. Research Gaps</h3>
@@ -273,12 +304,43 @@ Begin with: <h2>III. EXISTING SYSTEM</h2>
 
 Write a 3-sentence overview of current/existing approaches to the problem.
 
-Then include an architecture/flow diagram of the existing system as an inline SVG:
+Then reproduce this SVG architecture diagram (ORANGE theme) adapted with real component names for existing ${topic} systems:
 <div class="figure-container">
 <svg viewBox="0 0 350 280" xmlns="http://www.w3.org/2000/svg">
-  Draw a detailed SVG flowchart of the existing system/approach with at least 5 components
-  as rectangles connected by arrows (lines with arrowhead markers). Show the typical workflow, data flow, or architecture.
-  Use fill colors like #E3F2FD, #FFF3E0, #E8F5E9 for boxes, #333 for text, and #666 for arrows.
+  <defs>
+    <marker id="arrOr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#E65100"/>
+    </marker>
+  </defs>
+  <rect width="350" height="280" fill="#FFF8F0" rx="4"/>
+  <text x="175" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="#BF360C">Existing ${topic} System Architecture</text>
+  <!-- Box 1: REPLACE label with real existing system input stage -->
+  <rect x="110" y="22" width="130" height="34" rx="5" fill="#FFE0B2" stroke="#EF6C00" stroke-width="1.5"/>
+  <text x="175" y="44" text-anchor="middle" font-size="10" fill="#BF360C" font-weight="bold">Data Input Layer</text>
+  <line x1="175" y1="56" x2="175" y2="68" stroke="#E65100" stroke-width="1.5" marker-end="url(#arrOr)"/>
+  <!-- Box 2 -->
+  <rect x="110" y="68" width="130" height="34" rx="5" fill="#FFCC80" stroke="#EF6C00" stroke-width="1.5"/>
+  <text x="175" y="90" text-anchor="middle" font-size="10" fill="#BF360C" font-weight="bold">Pre-Processing</text>
+  <line x1="175" y1="102" x2="175" y2="114" stroke="#E65100" stroke-width="1.5" marker-end="url(#arrOr)"/>
+  <!-- Box 3 (wide center) -->
+  <rect x="60" y="114" width="230" height="34" rx="5" fill="#FFB74D" stroke="#EF6C00" stroke-width="1.5"/>
+  <text x="175" y="136" text-anchor="middle" font-size="10" fill="#BF360C" font-weight="bold">Core Processing Engine</text>
+  <!-- Split arrowsto box 4 and 5 -->
+  <line x1="120" y1="148" x2="95" y2="160" stroke="#E65100" stroke-width="1.5" marker-end="url(#arrOr)"/>
+  <line x1="230" y1="148" x2="255" y2="160" stroke="#E65100" stroke-width="1.5" marker-end="url(#arrOr)"/>
+  <!-- Box 4 -->
+  <rect x="30" y="160" width="120" height="34" rx="5" fill="#FFE0B2" stroke="#EF6C00" stroke-width="1.5"/>
+  <text x="90" y="182" text-anchor="middle" font-size="10" fill="#BF360C" font-weight="bold">Analysis Module</text>
+  <!-- Box 5 -->
+  <rect x="200" y="160" width="120" height="34" rx="5" fill="#FFE0B2" stroke="#EF6C00" stroke-width="1.5"/>
+  <text x="260" y="182" text-anchor="middle" font-size="10" fill="#BF360C" font-weight="bold">Storage Layer</text>
+  <!-- Converge arrows to box 6 -->
+  <line x1="90" y1="194" x2="130" y2="222" stroke="#E65100" stroke-width="1.5" marker-end="url(#arrOr)"/>
+  <line x1="260" y1="194" x2="220" y2="222" stroke="#E65100" stroke-width="1.5" marker-end="url(#arrOr)"/>
+  <!-- Box 6 (output) -->
+  <rect x="110" y="222" width="130" height="34" rx="5" fill="#FFB74D" stroke="#EF6C00" stroke-width="2"/>
+  <text x="175" y="244" text-anchor="middle" font-size="10" fill="#BF360C" font-weight="bold">Output / Results</text>
+  <!-- NOTE: Adapt ALL box labels above to match real existing system components for ${topic} -->
 </svg>
 <p class="fig-caption">Fig. 2. Architecture of the existing system for ${topic}</p>
 </div>
@@ -321,15 +383,48 @@ Begin with: <h2>IV. PROPOSED WORK AND METHODOLOGY</h2>
 
 Write a 3-sentence overview of what is being proposed and why it is superior to existing approaches.
 
-Then include the proposed system architecture as an inline SVG:
+Then reproduce this SVG architecture diagram (PURPLE theme) adapted with real component names for the proposed ${topic} system:
 <div class="figure-container">
-<svg viewBox="0 0 350 320" xmlns="http://www.w3.org/2000/svg">
-  Draw a detailed SVG diagram of the proposed system architecture/methodology with at least 8 components.
-  Use rectangles with rounded corners, arrows connecting them, and clear text labels.
-  Use fill colors like #E8EAF6, #E0F7FA, #FFF9C4, #F3E5F5 for modules.
-  Show data flow, processing stages, and key modules specific to the proposed approach for ${topic}.
+<svg viewBox="0 0 350 310" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrPu" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#4A148C"/>
+    </marker>
+  </defs>
+  <rect width="350" height="310" fill="#F3E5F5" rx="4"/>
+  <text x="175" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="#4A148C">Proposed ${topic} System</text>
+  <!-- Input -->
+  <rect x="115" y="24" width="120" height="32" rx="16" fill="#CE93D8" stroke="#7B1FA2" stroke-width="1.5"/>
+  <text x="175" y="44" text-anchor="middle" font-size="10" fill="#4A148C" font-weight="bold">User Input</text>
+  <line x1="175" y1="56" x2="175" y2="68" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#arrPu)"/>
+  <!-- Module 1 -->
+  <rect x="115" y="68" width="120" height="32" rx="5" fill="#E1BEE7" stroke="#7B1FA2" stroke-width="1.5"/>
+  <text x="175" y="88" text-anchor="middle" font-size="10" fill="#4A148C" font-weight="bold">Data Preprocessing</text>
+  <line x1="175" y1="100" x2="175" y2="112" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#arrPu)"/>
+  <!-- Central hub -->
+  <rect x="60" y="112" width="230" height="32" rx="5" fill="#AB47BC" stroke="#4A148C" stroke-width="2"/>
+  <text x="175" y="132" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">Intelligent Processing Core</text>
+  <!-- Branch left -->
+  <line x1="115" y1="144" x2="85" y2="158" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#arrPu)"/>
+  <rect x="22" y="158" width="126" height="32" rx="5" fill="#E1BEE7" stroke="#7B1FA2" stroke-width="1.5"/>
+  <text x="85" y="178" text-anchor="middle" font-size="10" fill="#4A148C" font-weight="bold">Feature Extraction</text>
+  <!-- Branch right -->
+  <line x1="235" y1="144" x2="265" y2="158" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#arrPu)"/>
+  <rect x="202" y="158" width="126" height="32" rx="5" fill="#E1BEE7" stroke="#7B1FA2" stroke-width="1.5"/>
+  <text x="265" y="178" text-anchor="middle" font-size="10" fill="#4A148C" font-weight="bold">Optimization Layer</text>
+  <!-- Converge -->
+  <line x1="85" y1="190" x2="130" y2="222" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#arrPu)"/>
+  <line x1="265" y1="190" x2="220" y2="222" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#arrPu)"/>
+  <!-- Decision -->
+  <rect x="95" y="222" width="160" height="32" rx="5" fill="#CE93D8" stroke="#7B1FA2" stroke-width="1.5"/>
+  <text x="175" y="242" text-anchor="middle" font-size="10" fill="#4A148C" font-weight="bold">Decision &amp; Validation</text>
+  <line x1="175" y1="254" x2="175" y2="266" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#arrPu)"/>
+  <!-- Output -->
+  <rect x="115" y="266" width="120" height="32" rx="16" fill="#AB47BC" stroke="#4A148C" stroke-width="2"/>
+  <text x="175" y="286" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">Output Results</text>
+  <!-- NOTE: Replace ALL box labels with actual proposed system components for ${topic} -->
 </svg>
-<p class="fig-caption">Fig. 3. Architecture of the proposed system for ${topic}</p>
+<p class="fig-caption">Fig. 3. Architecture of the proposed ${topic} system</p>
 </div>
 
 Then write four subsections:
@@ -351,11 +446,55 @@ Write at least ${Math.round(w.proposedWork * 0.20)} words.
 Explicitly compare the proposed approach with the existing system described in Section III. Highlight specific improvements. Include:
 
 <div class="figure-container">
-<svg viewBox="0 0 350 220" xmlns="http://www.w3.org/2000/svg">
-  Draw a grouped SVG bar chart comparing existing vs proposed system across at least 4 metrics.
-  Use pairs of bars (#EA4335 existing, #4285F4 proposed) with percentage labels on top, x-axis metric names, and a legend.
+<svg viewBox="0 0 350 230" xmlns="http://www.w3.org/2000/svg">
+  <rect width="350" height="230" fill="#F1F8E9" rx="4"/>
+  <text x="175" y="15" text-anchor="middle" font-size="11" font-weight="bold" fill="#1B5E20">Existing vs Proposed: ${topic}</text>
+  <!-- Axes -->
+  <line x1="55" y1="25" x2="55" y2="178" stroke="#2E7D32" stroke-width="1.5"/>
+  <line x1="55" y1="178" x2="340" y2="178" stroke="#2E7D32" stroke-width="1.5"/>
+  <!-- Y gridlines -->
+  <line x1="55" y1="58" x2="340" y2="58" stroke="#C8E6C9" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="88" x2="340" y2="88" stroke="#C8E6C9" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="118" x2="340" y2="118" stroke="#C8E6C9" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="148" x2="340" y2="148" stroke="#C8E6C9" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- Y labels -->
+  <text x="50" y="61" text-anchor="end" font-size="9" fill="#2E7D32">100%</text>
+  <text x="50" y="91" text-anchor="end" font-size="9" fill="#2E7D32">75%</text>
+  <text x="50" y="121" text-anchor="end" font-size="9" fill="#2E7D32">50%</text>
+  <text x="50" y="151" text-anchor="end" font-size="9" fill="#2E7D32">25%</text>
+  <text x="30" y="110" text-anchor="middle" font-size="9" fill="#1B5E20" transform="rotate(-90,30,110)">Score (%)</text>
+  <!-- Group 1 (REPLACE metric names and bar heights with actual ${topic} data) -->
+  <rect x="68" y="78" width="22" height="100" fill="#E57373"/>
+  <rect x="92" y="53" width="22" height="125" fill="#43A047"/>
+  <text x="86" y="192" text-anchor="middle" font-size="8" fill="#1B5E20">Accuracy</text>
+  <!-- Group 2 -->
+  <rect x="135" y="98" width="22" height="80" fill="#E57373"/>
+  <rect x="159" y="63" width="22" height="115" fill="#43A047"/>
+  <text x="153" y="192" text-anchor="middle" font-size="8" fill="#1B5E20">Precision</text>
+  <!-- Group 3 -->
+  <rect x="202" y="108" width="22" height="70" fill="#E57373"/>
+  <rect x="226" y="68" width="22" height="110" fill="#43A047"/>
+  <text x="220" y="192" text-anchor="middle" font-size="8" fill="#1B5E20">Recall</text>
+  <!-- Group 4 -->
+  <rect x="269" y="118" width="22" height="60" fill="#E57373"/>
+  <rect x="293" y="73" width="22" height="105" fill="#43A047"/>
+  <text x="287" y="192" text-anchor="middle" font-size="8" fill="#1B5E20">F1-Score</text>
+  <!-- Value labels (REPLACE with actual values) -->
+  <text x="79" y="75" text-anchor="middle" font-size="8" fill="#C62828">70%</text>
+  <text x="103" y="50" text-anchor="middle" font-size="8" fill="#1B5E20">88%</text>
+  <text x="146" y="95" text-anchor="middle" font-size="8" fill="#C62828">66%</text>
+  <text x="170" y="60" text-anchor="middle" font-size="8" fill="#1B5E20">85%</text>
+  <text x="213" y="105" text-anchor="middle" font-size="8" fill="#C62828">62%</text>
+  <text x="237" y="65" text-anchor="middle" font-size="8" fill="#1B5E20">83%</text>
+  <text x="280" y="115" text-anchor="middle" font-size="8" fill="#C62828">60%</text>
+  <text x="304" y="70" text-anchor="middle" font-size="8" fill="#1B5E20">81%</text>
+  <!-- Legend -->
+  <rect x="80" y="207" width="12" height="10" fill="#E57373"/>
+  <text x="95" y="217" font-size="9" fill="#C62828">Existing</text>
+  <rect x="185" y="207" width="12" height="10" fill="#43A047"/>
+  <text x="200" y="217" font-size="9" fill="#1B5E20">Proposed</text>
 </svg>
-<p class="fig-caption">Fig. 7. Quantitative comparison of existing vs proposed system</p>
+<p class="fig-caption">Fig. 7. Metric-wise comparison of existing and proposed systems for ${topic}</p>
 </div>
 
 <p class="table-caption">Table III: Comparison — Existing vs Proposed System</p>
@@ -388,26 +527,75 @@ Then write four subsections:
 Write at least ${Math.round(w.resultsDisc * 0.30)} words.
 Present main quantitative/qualitative results. Include metrics, percentages, p-values, confidence intervals.
 
-After this subsection, include:
-<p class="table-caption">Table IV: Summary of Experimental Results</p>
-<table>
-  <thead><tr><th>Metric</th><th>Proposed Method</th><th>Baseline / Existing</th><th>Improvement (%)</th><th>p-value</th></tr></thead>
-  <tbody>(6–8 rows)</tbody>
-</table>
-
+After this subsection, reproduce this SVG bar chart (BLUE/STEEL theme) comparing methods for ${topic}:
 <div class="figure-container">
 <svg viewBox="0 0 350 250" xmlns="http://www.w3.org/2000/svg">
-  Draw an SVG bar chart comparing at least 4 methods/metrics. Use colored <rect> bars (e.g., #4285F4 for proposed, #EA4335 for baseline).
-  Include x-axis labels, y-axis labels with gridlines, percentage values on top of each bar, and a legend.
+  <rect width="350" height="250" fill="#E8EAF6" rx="4"/>
+  <text x="175" y="15" text-anchor="middle" font-size="11" font-weight="bold" fill="#1A237E">Performance Comparison: ${topic}</text>
+  <!-- Axes -->
+  <line x1="55" y1="25" x2="55" y2="190" stroke="#283593" stroke-width="1.5"/>
+  <line x1="55" y1="190" x2="340" y2="190" stroke="#283593" stroke-width="1.5"/>
+  <!-- Gridlines -->
+  <line x1="55" y1="70" x2="340" y2="70" stroke="#C5CAE9" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="110" x2="340" y2="110" stroke="#C5CAE9" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="150" x2="340" y2="150" stroke="#C5CAE9" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- Y labels (REPLACE with actual values) -->
+  <text x="50" y="73" text-anchor="end" font-size="9" fill="#283593">100</text>
+  <text x="50" y="113" text-anchor="end" font-size="9" fill="#283593">75</text>
+  <text x="50" y="153" text-anchor="end" font-size="9" fill="#283593">50</text>
+  <text x="50" y="193" text-anchor="end" font-size="9" fill="#283593">0</text>
+  <text x="28" y="115" text-anchor="middle" font-size="9" fill="#1A237E" transform="rotate(-90,28,115)">Score</text>
+  <!-- Bars (REPLACE method names, fill colors, heights, and value labels with real data for ${topic}) -->
+  <rect x="72" y="40" width="38" height="150" fill="#3949AB"/>
+  <text x="91" y="36" text-anchor="middle" font-size="9" fill="#1A237E" font-weight="bold">94</text>
+  <text x="91" y="205" text-anchor="middle" font-size="8" fill="#1A237E">Proposed</text>
+  <rect x="137" y="75" width="38" height="115" fill="#5C6BC0"/>
+  <text x="156" y="71" text-anchor="middle" font-size="9" fill="#1A237E" font-weight="bold">78</text>
+  <text x="156" y="205" text-anchor="middle" font-size="8" fill="#1A237E">Method A</text>
+  <rect x="202" y="95" width="38" height="95" fill="#7986CB"/>
+  <text x="221" y="91" text-anchor="middle" font-size="9" fill="#1A237E" font-weight="bold">68</text>
+  <text x="221" y="205" text-anchor="middle" font-size="8" fill="#1A237E">Method B</text>
+  <rect x="267" y="115" width="38" height="75" fill="#9FA8DA"/>
+  <text x="286" y="111" text-anchor="middle" font-size="9" fill="#1A237E" font-weight="bold">55</text>
+  <text x="286" y="205" text-anchor="middle" font-size="8" fill="#1A237E">Baseline</text>
+  <!-- Legend -->
+  <text x="175" y="228" text-anchor="middle" font-size="9" fill="#1A237E">Darker blue = higher performance rank for ${topic}</text>
 </svg>
-<p class="fig-caption">Fig. 4. Comparative performance of proposed vs baseline approaches</p>
+<p class="fig-caption">Fig. 4. Comparative performance across methods for ${topic}</p>
 </div>
 
-Also include a pie chart showing the distribution of results or error categories:
+Also reproduce this SVG donut/pie chart (WARM RAINBOW theme) showing result distribution for ${topic}:
 <div class="figure-container">
-<svg viewBox="0 0 350 250" xmlns="http://www.w3.org/2000/svg">
-  Draw an SVG pie chart with at least 4 segments using distinct colors (#4285F4, #EA4335, #FBBC04, #34A853).
-  Include percentage labels on or near each segment and a legend on the right side.
+<svg viewBox="0 0 350 230" xmlns="http://www.w3.org/2000/svg">
+  <rect width="350" height="230" fill="#FFFDE7" rx="4"/>
+  <text x="175" y="15" text-anchor="middle" font-size="11" font-weight="bold" fill="#E65100">Result Distribution: ${topic}</text>
+  <!-- Donut chart using stroke-dasharray on a circle (circumference ≈ 282 for r=45) -->
+  <!-- Segment 1: ~35% (dasharray 99 183) REPLACE percentages with actual result categories -->
+  <circle cx="130" cy="118" r="45" fill="none" stroke="#F44336" stroke-width="28"
+    stroke-dasharray="99 183" stroke-dashoffset="0"/>
+  <!-- Segment 2: ~28% (dasharray 79 203) -->
+  <circle cx="130" cy="118" r="45" fill="none" stroke="#FF9800" stroke-width="28"
+    stroke-dasharray="79 203" stroke-dashoffset="-99"/>
+  <!-- Segment 3: ~22% (dasharray 62 220) -->
+  <circle cx="130" cy="118" r="45" fill="none" stroke="#4CAF50" stroke-width="28"
+    stroke-dasharray="62 220" stroke-dashoffset="-178"/>
+  <!-- Segment 4: remaining ~15% -->
+  <circle cx="130" cy="118" r="45" fill="none" stroke="#2196F3" stroke-width="28"
+    stroke-dasharray="42 240" stroke-dashoffset="-240"/>
+  <!-- Center hole -->
+  <circle cx="130" cy="118" r="28" fill="#FFFDE7"/>
+  <text x="130" y="114" text-anchor="middle" font-size="10" fill="#E65100" font-weight="bold">Result</text>
+  <text x="130" y="126" text-anchor="middle" font-size="10" fill="#E65100" font-weight="bold">Split</text>
+  <!-- Legend (REPLACE category names with actual result categories for ${topic}) -->
+  <rect x="215" y="65" width="12" height="12" fill="#F44336" rx="2"/>
+  <text x="231" y="76" font-size="10" fill="#333">Category A: 35%</text>
+  <rect x="215" y="87" width="12" height="12" fill="#FF9800" rx="2"/>
+  <text x="231" y="98" font-size="10" fill="#333">Category B: 28%</text>
+  <rect x="215" y="109" width="12" height="12" fill="#4CAF50" rx="2"/>
+  <text x="231" y="120" font-size="10" fill="#333">Category C: 22%</text>
+  <rect x="215" y="131" width="12" height="12" fill="#2196F3" rx="2"/>
+  <text x="231" y="142" font-size="10" fill="#333">Category D: 15%</text>
+  <!-- NOTE: Adjust stroke-dasharray values and labels to reflect actual ${topic} data -->
 </svg>
 <p class="fig-caption">Fig. 5. Distribution of ${topic} results by category</p>
 </div>
@@ -416,15 +604,48 @@ Also include a pie chart showing the distribution of results or error categories
 Write at least ${Math.round(w.resultsDisc * 0.25)} words.
 Explain WHY results occurred. Discuss underlying causes, mechanisms, contributing factors. Address any unexpected findings.
 
-Include a line graph showing performance trends:
+Include a line graph showing performance trends (DARK RED/NAVY theme):
 <div class="figure-container">
-<svg viewBox="0 0 350 220" xmlns="http://www.w3.org/2000/svg">
-  Draw an SVG line graph with at least 2 lines (proposed method vs baseline).
-  X-axis: training epochs, iterations, or data size. Y-axis: performance metric.
-  Use <polyline> with different colors (#4285F4 proposed, #EA4335 baseline).
-  Include data point markers, axis labels, gridlines, and a legend.
+<svg viewBox="0 0 350 230" xmlns="http://www.w3.org/2000/svg">
+  <rect width="350" height="230" fill="#FFEBEE" rx="4"/>
+  <text x="175" y="15" text-anchor="middle" font-size="11" font-weight="bold" fill="#B71C1C">Performance Trend Analysis: ${topic}</text>
+  <!-- Axes -->
+  <line x1="55" y1="25" x2="55" y2="185" stroke="#C62828" stroke-width="1.5"/>
+  <line x1="55" y1="185" x2="330" y2="185" stroke="#C62828" stroke-width="1.5"/>
+  <!-- Gridlines -->
+  <line x1="55" y1="65" x2="330" y2="65" stroke="#FFCDD2" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="105" x2="330" y2="105" stroke="#FFCDD2" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="145" x2="330" y2="145" stroke="#FFCDD2" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- Y labels (REPLACE with actual metric range for ${topic}) -->
+  <text x="50" y="68" text-anchor="end" font-size="9" fill="#C62828">100%</text>
+  <text x="50" y="108" text-anchor="end" font-size="9" fill="#C62828">75%</text>
+  <text x="50" y="148" text-anchor="end" font-size="9" fill="#C62828">50%</text>
+  <text x="50" y="188" text-anchor="end" font-size="9" fill="#C62828">25%</text>
+  <text x="28" y="110" text-anchor="middle" font-size="9" fill="#B71C1C" transform="rotate(-90,28,110)">Accuracy (%)</text>
+  <!-- X labels (REPLACE with actual iterations/epochs/folds for ${topic}) -->
+  <text x="80" y="200" text-anchor="middle" font-size="9" fill="#B71C1C">Ep.1</text>
+  <text x="120" y="200" text-anchor="middle" font-size="9" fill="#B71C1C">Ep.5</text>
+  <text x="160" y="200" text-anchor="middle" font-size="9" fill="#B71C1C">Ep.10</text>
+  <text x="200" y="200" text-anchor="middle" font-size="9" fill="#B71C1C">Ep.20</text>
+  <text x="240" y="200" text-anchor="middle" font-size="9" fill="#B71C1C">Ep.30</text>
+  <text x="280" y="200" text-anchor="middle" font-size="9" fill="#B71C1C">Ep.40</text>
+  <text x="320" y="200" text-anchor="middle" font-size="9" fill="#B71C1C">Ep.50</text>
+  <!-- Proposed method line (REPLACE y-coords to reflect actual convergence curve) -->
+  <polyline points="80,155 120,130 160,105 200,80 240,68 280,60 320,55" fill="none" stroke="#B71C1C" stroke-width="2.5"/>
+  <circle cx="80" cy="155" r="4" fill="#B71C1C"/><circle cx="120" cy="130" r="4" fill="#B71C1C"/>
+  <circle cx="160" cy="105" r="4" fill="#B71C1C"/><circle cx="200" cy="80" r="4" fill="#B71C1C"/>
+  <circle cx="240" cy="68" r="4" fill="#B71C1C"/><circle cx="280" cy="60" r="4" fill="#B71C1C"/>
+  <circle cx="320" cy="55" r="4" fill="#7B0000"/>
+  <!-- Baseline line -->
+  <polyline points="80,165 120,155 160,140 200,125 240,118 280,112 320,108" fill="none" stroke="#0D47A1" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="80" cy="165" r="3" fill="#0D47A1"/><circle cx="320" cy="108" r="3" fill="#0D47A1"/>
+  <!-- Legend -->
+  <line x1="65" y1="215" x2="90" y2="215" stroke="#B71C1C" stroke-width="2.5"/>
+  <text x="93" y="219" font-size="9" fill="#B71C1C">Proposed</text>
+  <line x1="190" y1="215" x2="215" y2="215" stroke="#0D47A1" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="218" y="219" font-size="9" fill="#0D47A1">Baseline</text>
 </svg>
-<p class="fig-caption">Fig. 6. Performance trend comparison of proposed and baseline methods</p>
+<p class="fig-caption">Fig. 6. Performance trend of proposed vs baseline for ${topic}</p>
 </div>
 
 <h3>C. Comparison with Existing Literature</h3>
@@ -579,12 +800,48 @@ Begin with: <h2>III. ANALYTICAL FRAMEWORK</h2>
 
 Write a 3-sentence overview of the analytical approach.
 
-Then include a conceptual diagram as inline SVG:
+Then reproduce this SVG analytical framework diagram (TEAL-GREEN theme) adapted with real concepts for ${topic}:
 <div class="figure-container">
-<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg">
-  Draw an SVG diagram showing the analytical framework — key concepts as rounded rectangles,
-  their relationships as labeled arrows, and how they connect to the research questions.
-  Use soft fill colors (#E8EAF6, #FFF3E0, #E8F5E9) and clear text labels.
+<svg viewBox="0 0 350 290" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrTG" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#00695C"/>
+    </marker>
+  </defs>
+  <rect width="350" height="290" fill="#E8F5E9" rx="4"/>
+  <text x="175" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="#1B5E20">Analytical Framework: ${topic}</text>
+  <!-- Central research question box -->
+  <rect x="90" y="22" width="170" height="34" rx="17" fill="#A5D6A7" stroke="#388E3C" stroke-width="2"/>
+  <text x="175" y="43" text-anchor="middle" font-size="10" fill="#1B5E20" font-weight="bold">Research Question</text>
+  <!-- Arrows from research question to three pillars -->
+  <line x1="115" y1="56" x2="75" y2="92" stroke="#00695C" stroke-width="1.5" marker-end="url(#arrTG)"/>
+  <line x1="175" y1="56" x2="175" y2="92" stroke="#00695C" stroke-width="1.5" marker-end="url(#arrTG)"/>
+  <line x1="235" y1="56" x2="275" y2="92" stroke="#00695C" stroke-width="1.5" marker-end="url(#arrTG)"/>
+  <!-- Pillar 1 (REPLACE labels with actual framework components for ${topic}) -->
+  <rect x="22" y="92" width="106" height="34" rx="5" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/>
+  <text x="75" y="113" text-anchor="middle" font-size="10" fill="#1B5E20" font-weight="bold">Theoretical Lens</text>
+  <!-- Pillar 2 -->
+  <rect x="118" y="92" width="114" height="34" rx="5" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/>
+  <text x="175" y="113" text-anchor="middle" font-size="10" fill="#1B5E20" font-weight="bold">Methodology</text>
+  <!-- Pillar 3 -->
+  <rect x="224" y="92" width="106" height="34" rx="5" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/>
+  <text x="277" y="113" text-anchor="middle" font-size="10" fill="#1B5E20" font-weight="bold">Evaluation Criteria</text>
+  <!-- Arrows to analysis layer -->
+  <line x1="75" y1="126" x2="115" y2="162" stroke="#00695C" stroke-width="1.5" marker-end="url(#arrTG)"/>
+  <line x1="175" y1="126" x2="175" y2="162" stroke="#00695C" stroke-width="1.5" marker-end="url(#arrTG)"/>
+  <line x1="277" y1="126" x2="237" y2="162" stroke="#00695C" stroke-width="1.5" marker-end="url(#arrTG)"/>
+  <!-- Analysis layer -->
+  <rect x="55" y="162" width="240" height="34" rx="5" fill="#66BB6A" stroke="#2E7D32" stroke-width="2"/>
+  <text x="175" y="183" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">Analysis &amp; Interpretation</text>
+  <line x1="175" y1="196" x2="175" y2="222" stroke="#00695C" stroke-width="1.5" marker-end="url(#arrTG)"/>
+  <!-- Findings -->
+  <rect x="85" y="222" width="180" height="34" rx="5" fill="#A5D6A7" stroke="#388E3C" stroke-width="1.5"/>
+  <text x="175" y="243" text-anchor="middle" font-size="10" fill="#1B5E20" font-weight="bold">Findings &amp; Insights</text>
+  <line x1="175" y1="256" x2="175" y2="272" stroke="#00695C" stroke-width="1.5" marker-end="url(#arrTG)"/>
+  <!-- Conclusion -->
+  <rect x="115" y="272" width="120" height="14" rx="7" fill="#2E7D32"/>
+  <text x="175" y="283" text-anchor="middle" font-size="9" fill="#fff" font-weight="bold">Conclusions</text>
+  <!-- NOTE: Replace ALL box labels with actual analytical concepts for ${topic} -->
 </svg>
 <p class="fig-caption">Fig. 1. Conceptual framework for analyzing ${topic}</p>
 </div>
