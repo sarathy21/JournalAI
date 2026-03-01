@@ -54,6 +54,12 @@ const ieeetwocolumncss = `
     text-indent: 0;
     margin: 0 0 0.4em 0;
   }
+  /* Author block inside front-matter must stay centred */
+  .front-matter .author-block { text-align: center; }
+  .front-matter .author-name,
+  .front-matter .author-reg,
+  .front-matter .author-affiliation,
+  .front-matter .author-detail { text-align: center !important; }
   .front-matter .keywords {
     text-align: left;
     font-size: 9pt;
