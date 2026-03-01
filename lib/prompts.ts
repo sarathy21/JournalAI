@@ -284,8 +284,12 @@ After this subsection, reproduce this SVG line chart (TEAL theme) adapted with r
 </div>
 
 <h3>C. Research Gaps</h3>
-Write at least ${Math.round(w.litRev * 0.30)} words.
+Write at least ${Math.round(w.litRev * 0.20)} words.
 Identify 3+ specific gaps. For each, explain why it matters and how this paper fills it.
+
+<h3>D. Comparative Summary of Literature</h3>
+Write at least ${Math.round(w.litRev * 0.10)} words.
+Summarize the key takeaways from the literature, clearly showing how existing approaches differ and where the field is heading. Conclude by stating how this paper addresses the most critical unresolved issues.
 
 Begin with <h2>II. LITERATURE REVIEW</h2>.`,
       minWords: w.litRev,
@@ -527,7 +531,14 @@ Then write four subsections:
 Write at least ${Math.round(w.resultsDisc * 0.30)} words.
 Present main quantitative/qualitative results. Include metrics, percentages, p-values, confidence intervals.
 
-After this subsection, reproduce this SVG bar chart (BLUE/STEEL theme) comparing methods for ${topic}:
+After this subsection, include:
+<p class="table-caption">Table IV: Summary of Experimental Results</p>
+<table>
+  <thead><tr><th>Metric</th><th>Proposed Method</th><th>Baseline / Existing</th><th>Improvement (%)</th><th>p-value</th></tr></thead>
+  <tbody>(6–8 rows with realistic values for ${topic})</tbody>
+</table>
+
+Then reproduce this SVG bar chart (BLUE/STEEL theme) comparing methods for ${topic}:
 <div class="figure-container">
 <svg viewBox="0 0 350 250" xmlns="http://www.w3.org/2000/svg">
   <rect width="350" height="250" fill="#E8EAF6" rx="4"/>
@@ -663,36 +674,54 @@ Begin with <h2>V. RESULTS AND DISCUSSION</h2>.`,
     },
 
     // ── SECTION 6: Conclusion ────────────────────────────────────────────
-    // ── SECTION 7: References ────────────────────────────────────────────
     {
-      sectionName: 'Conclusion & References',
-      systemMessage: `${baseSystem}\nWrite ONLY the Conclusion and References. Target: min ${w.conclusion} words for conclusion plus ${refCount} references.`,
-      userPrompt: `Write Section VI (Conclusion) and Section VII (References) for an IEEE paper on:
+      sectionName: 'Conclusion',
+      systemMessage: `${baseSystem}\nWrite ONLY the Conclusion section. Target: minimum ${w.conclusion} words.`,
+      userPrompt: `Write Section VI (Conclusion) for an IEEE paper on:
 
 TOPIC: ${topic}
 DOMAIN: ${domain}
-CITATION STYLE: ${citationStyle}
 
 Begin with: <h2>VI. CONCLUSION</h2>
 
 Write at least 5 substantial paragraphs in <p style="text-align:justify"> tags. No bullet lists.
 
-P1: Restate the research problem and gap.
-P2: Summarize what was proposed and how it differs from existing systems.
-P3: State principal findings and what they demonstrate.
-P4: Articulate contributions to ${domain}. Note study limitations.
+P1: Restate the research problem and gap addressed in this paper.
+P2: Summarize the proposed system/method and how it differs from existing systems.
+P3: State the principal findings and quantitative results achieved.
+P4: Articulate specific contributions to ${domain}. Acknowledge study limitations.
 P5: Propose 3+ concrete future research directions with justification.
 
 Minimum ${w.conclusion} words.
 
-Then:
-<h2>VII. REFERENCES</h2>
-List ${refCount} references in IEEE format. Each on its own line in <p> tags.
-Format: [N] A. B. Surname, C. D. Author, "Title," <em>Journal</em>, vol. XX, no. Y, pp. ZZZ–ZZZ, Mon. YYYY, doi: 10.XXXX/XXXXX.
-Make all references relevant to ${topic} in ${domain}.
-
 Begin with <h2>VI. CONCLUSION</h2>.`,
       minWords: w.conclusion,
+    },
+
+    // ── SECTION 7: References ────────────────────────────────────────────
+    {
+      sectionName: 'References',
+      systemMessage: `${baseSystem}\nWrite ONLY the References section. Output ${refCount} IEEE-format references.`,
+      userPrompt: `Write Section VII (References) for an IEEE paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Begin with: <h2>VII. REFERENCES</h2>
+
+List exactly ${refCount} references in IEEE format. Each reference on its own line wrapped in <p style="text-align:justify"> tags.
+Format: <p style="text-align:justify">[N] A. B. Surname, C. D. Author, "Title of the Paper," <em>Journal Name</em>, vol. XX, no. Y, pp. ZZZ–ZZZ, Mon. YYYY, doi: 10.XXXX/XXXXX.</p>
+
+Requirements:
+- Every reference must be relevant to ${topic} in ${domain}.
+- Include a mix of journal articles, conference papers, and book chapters.
+- References should span from foundational works (2015–2018) to recent publications (2022–2025).
+- Use realistic author names, journal titles, and formatting.
+- Number references sequentially from [1] to [${refCount.split('-')[1] || refCount.split('-')[0]}].
+
+Begin with <h2>VII. REFERENCES</h2>.`,
+      minWords: 200,
     },
   ]
 }
@@ -936,15 +965,14 @@ Begin with <h2>V. DISCUSSION AND IMPLICATIONS</h2>.`,
       minWords: w.discussion,
     },
 
-    // Section 6: Conclusion + References
+    // Section 6: Conclusion
     {
-      sectionName: 'Conclusion & References',
-      systemMessage: `${baseSystem}\nWrite ONLY the Conclusion and References. Target: min ${w.conclusion} words for conclusion plus ${refCount} references.`,
-      userPrompt: `Write Section VI (Conclusion) and References for an academic paper on:
+      sectionName: 'Conclusion',
+      systemMessage: `${baseSystem}\nWrite ONLY the Conclusion section. Target: minimum ${w.conclusion} words.`,
+      userPrompt: `Write Section VI (Conclusion) for an academic paper on:
 
 TOPIC: ${topic}
 DOMAIN: ${domain}
-CITATION STYLE: ${citationStyle}
 
 Begin with: <h2>VI. CONCLUSION</h2>
 
@@ -957,13 +985,29 @@ Write at least 5 paragraphs in <p style="text-align:justify"> tags:
 
 Minimum ${w.conclusion} words.
 
-Then: <h2>REFERENCES</h2>
-List ${refCount} references in IEEE format.
-Format: [N] A. Author, "Title," <em>Journal</em>, vol. XX, no. Y, pp. ZZZ–ZZZ, Year.
-Make references relevant to ${topic} in ${domain}.
-
 Begin with <h2>VI. CONCLUSION</h2>.`,
       minWords: w.conclusion,
+    },
+
+    // Section 7: References
+    {
+      sectionName: 'References',
+      systemMessage: `${baseSystem}\nWrite ONLY the References section. Output ${refCount} IEEE-format references.`,
+      userPrompt: `Write the References section for an academic paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Begin with: <h2>REFERENCES</h2>
+
+List exactly ${refCount} references in IEEE format. Each in <p style="text-align:justify"> tags.
+Format: <p style="text-align:justify">[N] A. B. Surname, C. D. Author, "Title," <em>Journal</em>, vol. XX, no. Y, pp. ZZZ–ZZZ, Year, doi: 10.XXXX/XXXXX.</p>
+
+All references must be relevant to ${topic} in ${domain}. Include journal articles, conference papers, and book chapters spanning 2015–2025.
+
+Begin with <h2>REFERENCES</h2>.`,
+      minWords: 200,
     },
   ]
 }
@@ -1086,13 +1130,48 @@ Begin with: <h2>IV. COMPARATIVE ANALYSIS</h2>
 Write at least ${Math.round(w.comparative * 0.40)} words.
 Compare the studies from Section III across dimensions: methodology, scale, findings, context. Identify areas of consensus and disagreement.
 
-Include a comparison chart as inline SVG:
+Include this comparison chart (CYAN/AMBER theme) adapted with real method names and scores from the reviewed studies:
 <div class="figure-container">
-<svg viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
-  Create an SVG bar or grouped bar chart comparing the key approaches or methods found in the reviewed studies.
-  Show at least 5 dimensions of comparison. Use distinct colors for each approach, axis labels, and a legend.
+<svg viewBox="0 0 350 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="350" height="260" fill="#E0F7FA" rx="4"/>
+  <text x="175" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="#006064">Comparative Overview of Approaches: ${topic}</text>
+  <!-- Axes -->
+  <line x1="55" y1="25" x2="55" y2="200" stroke="#00838F" stroke-width="1.5"/>
+  <line x1="55" y1="200" x2="340" y2="200" stroke="#00838F" stroke-width="1.5"/>
+  <!-- Gridlines -->
+  <line x1="55" y1="60" x2="340" y2="60" stroke="#B2EBF2" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="95" x2="340" y2="95" stroke="#B2EBF2" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="130" x2="340" y2="130" stroke="#B2EBF2" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="55" y1="165" x2="340" y2="165" stroke="#B2EBF2" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- Y labels -->
+  <text x="50" y="63" text-anchor="end" font-size="9" fill="#00838F">100</text>
+  <text x="50" y="98" text-anchor="end" font-size="9" fill="#00838F">75</text>
+  <text x="50" y="133" text-anchor="end" font-size="9" fill="#00838F">50</text>
+  <text x="50" y="168" text-anchor="end" font-size="9" fill="#00838F">25</text>
+  <text x="50" y="203" text-anchor="end" font-size="9" fill="#00838F">0</text>
+  <!-- Bars (REPLACE method names, heights, and value labels with actual reviewed approaches for ${topic}) -->
+  <rect x="68" y="48" width="32" height="152" fill="#00ACC1"/>
+  <text x="84" y="44" text-anchor="middle" font-size="9" fill="#006064" font-weight="bold">92</text>
+  <text x="84" y="214" text-anchor="middle" font-size="8" fill="#006064">Method A</text>
+  <rect x="118" y="65" width="32" height="135" fill="#26C6DA"/>
+  <text x="134" y="61" text-anchor="middle" font-size="9" fill="#006064" font-weight="bold">84</text>
+  <text x="134" y="214" text-anchor="middle" font-size="8" fill="#006064">Method B</text>
+  <rect x="168" y="82" width="32" height="118" fill="#FFB300"/>
+  <text x="184" y="78" text-anchor="middle" font-size="9" fill="#E65100" font-weight="bold">76</text>
+  <text x="184" y="214" text-anchor="middle" font-size="8" fill="#006064">Method C</text>
+  <rect x="218" y="100" width="32" height="100" fill="#FFA000"/>
+  <text x="234" y="96" text-anchor="middle" font-size="9" fill="#E65100" font-weight="bold">68</text>
+  <text x="234" y="214" text-anchor="middle" font-size="8" fill="#006064">Method D</text>
+  <rect x="268" y="120" width="32" height="80" fill="#FF8F00"/>
+  <text x="284" y="116" text-anchor="middle" font-size="9" fill="#E65100" font-weight="bold">58</text>
+  <text x="284" y="214" text-anchor="middle" font-size="8" fill="#006064">Method E</text>
+  <!-- Legend -->
+  <rect x="75" y="237" width="10" height="10" fill="#00ACC1" rx="2"/>
+  <text x="89" y="247" font-size="9" fill="#006064">Top performing</text>
+  <rect x="195" y="237" width="10" height="10" fill="#FFB300" rx="2"/>
+  <text x="209" y="247" font-size="9" fill="#E65100">Lower performing</text>
 </svg>
-<p class="fig-caption">Fig. 1. Comparative overview of reviewed approaches</p>
+<p class="fig-caption">Fig. 1. Comparative overview of reviewed approaches for ${topic}</p>
 </div>
 
 <h3>B. Trends and Patterns</h3>
@@ -1135,15 +1214,14 @@ Begin with <h2>V. DISCUSSION AND RESEARCH AGENDA</h2>.`,
       minWords: w.discussion,
     },
 
-    // Section 6: Conclusion + References
+    // Section 6: Conclusion
     {
-      sectionName: 'Conclusion & References',
-      systemMessage: `${baseSystem}\nWrite ONLY the Conclusion and References. Target: min ${w.conclusion} words for conclusion plus ${refCount} references.`,
-      userPrompt: `Write Section VI (Conclusion) and References for a review paper on:
+      sectionName: 'Conclusion',
+      systemMessage: `${baseSystem}\nWrite ONLY the Conclusion section. Target: minimum ${w.conclusion} words.`,
+      userPrompt: `Write Section VI (Conclusion) for a review paper on:
 
 TOPIC: ${topic}
 DOMAIN: ${domain}
-CITATION STYLE: ${citationStyle}
 
 Begin with: <h2>VI. CONCLUSION</h2>
 
@@ -1156,11 +1234,29 @@ Write at least 5 paragraphs in <p style="text-align:justify"> tags:
 
 Minimum ${w.conclusion} words.
 
-Then: <h2>REFERENCES</h2>
-List ${refCount} references in IEEE format. Since this is a review paper, include MORE references (aim for the higher end).
-
 Begin with <h2>VI. CONCLUSION</h2>.`,
       minWords: w.conclusion,
+    },
+
+    // Section 7: References
+    {
+      sectionName: 'References',
+      systemMessage: `${baseSystem}\nWrite ONLY the References section. Output ${refCount} IEEE-format references. Since this is a review paper, aim for the higher end.`,
+      userPrompt: `Write the References section for a review paper on:
+
+TOPIC: ${topic}
+DOMAIN: ${domain}
+CITATION STYLE: ${citationStyle}
+
+Begin with: <h2>REFERENCES</h2>
+
+List exactly ${refCount} references in IEEE format. Each in <p style="text-align:justify"> tags.
+Format: <p style="text-align:justify">[N] A. B. Surname, C. D. Author, "Title," <em>Journal</em>, vol. XX, no. Y, pp. ZZZ–ZZZ, Year, doi: 10.XXXX/XXXXX.</p>
+
+Since this is a review paper, include MORE references (aim for the higher end of ${refCount}). All references must be relevant to ${topic} in ${domain}.
+
+Begin with <h2>REFERENCES</h2>.`,
+      minWords: 200,
     },
   ]
 }
