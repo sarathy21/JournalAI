@@ -132,17 +132,46 @@ export async function POST(request: Request) {
     return emitted
   }
 
+  /** Validate the complete paper HTML and fix critical gaps */
+  function validatePaper(fullHTML: string): {
+    hasReferences: boolean
+    hasConclusion: boolean
+    figureCount: number
+    tableCount: number
+    svgHasTextInstructions: boolean
+  } {
+    const hasReferences = /<h2[^>]*>\s*(VII\.\s*)?REFERENCES/i.test(fullHTML)
+    const hasConclusion = /<h2[^>]*>\s*(VI\.\s*)?CONCLUSION/i.test(fullHTML)
+    const figureCount = (fullHTML.match(/<svg[\s\S]*?<\/svg>/gi) || []).length
+    const tableCount = (fullHTML.match(/<table[\s\S]*?<\/table>/gi) || []).length
+    // Detect if any SVG contains plain English instructions instead of markup
+    const svgs = fullHTML.match(/<svg[\s\S]*?<\/svg>/gi) || []
+    const svgHasTextInstructions = svgs.some(svg => {
+      const inner = svg.replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '')
+      // If text content (after stripping tags) is >40% of total, it's likely instructions
+      const textOnly = inner.replace(/<[^>]+>/g, '').trim()
+      const tagContent = inner.replace(/[^<>]/g, '').length
+      return textOnly.length > 100 && textOnly.length > tagContent * 2
+    })
+    return { hasReferences, hasConclusion, figureCount, tableCount, svgHasTextInstructions }
+  }
+
   // Stream all sections sequentially in one ReadableStream
   const readable = new ReadableStream({
     async start(controller) {
       const encode = (t: string) => controller.enqueue(new TextEncoder().encode(t))
+      let allHTML = ''
+      const trackingEncode = (t: string) => {
+        allHTML += t
+        encode(t)
+      }
       try {
         for (const section of sections) {
           // First pass
           let sectionHTML = await streamSection(
             section.systemMessage,
             section.userPrompt,
-            encode,
+            trackingEncode,
           )
 
           // Continuation pass: if output is below 80% of the target, ask the model to keep going
@@ -156,13 +185,45 @@ export async function POST(request: Request) {
             const extra = await streamSection(
               continuationSys,
               section.userPrompt,
-              encode,
+              trackingEncode,
               sectionHTML,
             )
             sectionHTML += extra
           }
 
-          encode('\n')
+          trackingEncode('\n')
+        }
+
+        // ── Post-generation validation ──────────────────────────────────
+        const validation = validatePaper(allHTML)
+        console.log('[Validation]', JSON.stringify(validation))
+
+        // If references are missing, generate them as a recovery pass
+        if (!validation.hasReferences) {
+          console.log('[Validation] References missing — generating recovery pass')
+          const refSection = sections.find(s => s.sectionName === 'References')
+          if (refSection) {
+            await streamSection(
+              refSection.systemMessage,
+              refSection.userPrompt,
+              trackingEncode,
+            )
+            trackingEncode('\n')
+          }
+        }
+
+        // If conclusion is missing, generate it as a recovery pass
+        if (!validation.hasConclusion) {
+          console.log('[Validation] Conclusion missing — generating recovery pass')
+          const concSection = sections.find(s => s.sectionName === 'Conclusion')
+          if (concSection) {
+            await streamSection(
+              concSection.systemMessage,
+              concSection.userPrompt,
+              trackingEncode,
+            )
+            trackingEncode('\n')
+          }
         }
       } catch (err) {
         console.error('Generation error:', err)
