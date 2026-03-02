@@ -81,10 +81,14 @@ export function buildSectionPrompts(options: PaperOptions): SectionPrompt[] {
     conclusion:     Math.round(targetWords * 0.14),
   }
 
-  // Build author lines for HTML
+  // Build author lines for HTML — each author stacked vertically
   const authorNamesHtml = authors
-    .map(a => `<p class="author-name">${a.name}</p>${a.registerNumber ? `\n<p class="author-reg">${a.registerNumber}</p>` : ''}`)
-    .join('\n')
+    .map(a => {
+      let html = `<p class="author-name">${a.name}</p>`
+      if (a.registerNumber) html += `\n<p class="author-reg">${a.registerNumber}</p>`
+      return html
+    })
+    .join('\n<br/>\n')
 
   const affiliationLines = [department, college, affiliation].filter(Boolean)
   const affiliationHtml = affiliationLines
