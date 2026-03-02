@@ -92,8 +92,8 @@ const ieeetwocolumncss = `
   }
   .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; text-align: center; }
   .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; text-align: center; }
-  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; text-align: center; }
-  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: normal; margin: 0.05em 0; color: #333; text-align: center; font-family: 'Times New Roman', Times, serif; }
+  .author-detail { font-size: 9pt; font-style: normal; margin: 0.1em 0; color: #333; text-align: center; font-family: 'Times New Roman', Times, serif; }
   
   /* Two-column content area */
   .two-column {
@@ -158,9 +158,10 @@ const ieeetwocolumncss = `
     font-family: 'Courier New', monospace; 
     font-size: 7pt; 
     line-height: 1.2; 
-    text-align: center; 
-    white-space: pre; 
-    overflow: visible;
+    text-align: left; 
+    white-space: pre-wrap; 
+    word-wrap: break-word;
+    overflow-x: auto;
     break-inside: avoid;
     width: 100%;
   }
@@ -255,8 +256,8 @@ const ieeeSingleColumnCss = `
   .author-block { text-align: center; margin: 0.3em 0 1em 0; }
   .author-name { font-size: 10pt; font-weight: bold; margin: 0.15em 0 0; text-align: center; }
   .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; text-align: center; }
-  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; color: #333; text-align: center; }
-  .author-detail { font-size: 9pt; font-style: italic; margin: 0.1em 0; color: #333; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: normal; margin: 0.05em 0; color: #333; text-align: center; font-family: 'Times New Roman', Times, serif; }
+  .author-detail { font-size: 9pt; font-style: normal; margin: 0.1em 0; color: #333; text-align: center; font-family: 'Times New Roman', Times, serif; }
   .keywords { font-size: 10pt; margin: 0.5em 0 1.5em 0; }
   
   h2 { font-size: 12pt; margin: 1.2em 0 0.5em 0; font-weight: bold; text-transform: uppercase; }
@@ -269,7 +270,7 @@ const ieeeSingleColumnCss = `
   table th { background: #f0f0f0; font-weight: bold; text-align: center; }
   .table-caption { text-align: center; font-weight: bold; font-size: 10pt; margin: 1em 0 0.3em 0; font-variant: small-caps; }
   
-  pre.figure { background: #fafafa; border: 1px solid #999; padding: 1em; margin: 1em auto; max-width: 85%; font-family: 'Courier New', monospace; font-size: 9pt; line-height: 1.3; text-align: center; white-space: pre; }
+  pre.figure { background: #fafafa; border: 1px solid #999; padding: 1em; margin: 1em auto; max-width: 85%; font-family: 'Courier New', monospace; font-size: 9pt; line-height: 1.3; text-align: left; white-space: pre-wrap; word-wrap: break-word; overflow-x: auto; }
   .fig-caption { text-align: center; font-style: italic; font-size: 10pt; margin: 0.3em 0 1em 0; }
   
   ul, ol { margin: 0.5em 0 0.5em 2em; }
@@ -333,7 +334,7 @@ const apaFormatCss = `
   .author-block { text-align: center; margin: 1em 0 2em 0; line-height: 2; }
   .author-name { font-size: 10pt; font-weight: normal; margin: 0; text-align: center; }
   .author-reg { font-size: 9pt; margin: 0; color: #333; text-align: center; }
-  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0; text-align: center; }
+  .author-affiliation { font-size: 9pt; font-style: normal; margin: 0; text-align: center; font-family: 'Times New Roman', Times, serif; }
   .author-detail { font-size: 12pt; font-style: normal; margin: 0; text-align: center; }
   .keywords { font-size: 12pt; margin: 1em 0 2em 0; font-style: italic; }
   
@@ -346,7 +347,7 @@ const apaFormatCss = `
   table th { font-weight: bold; }
   .table-caption { text-align: left; font-weight: bold; font-size: 12pt; margin: 1em 0 0.3em 0; font-style: italic; }
   
-  pre.figure { background: #fff; border: none; padding: 1em; margin: 1em auto; font-family: 'Courier New', monospace; font-size: 10pt; }
+  pre.figure { background: #fff; border: none; padding: 1em; margin: 1em auto; font-family: 'Courier New', monospace; font-size: 10pt; white-space: pre-wrap; word-wrap: break-word; overflow-x: auto; }
   .fig-caption { text-align: left; font-style: italic; font-size: 12pt; margin: 0.5em 0 1em 0; }
   
   ul, ol { margin: 0 0 0 0.5in; }
@@ -406,7 +407,7 @@ const modernCleanCss = `
   .author-block { text-align: center; margin: 0.5em 0 1.5em 0; }
   .author-name { font-size: 10pt; font-weight: 600; margin: 0.15em 0 0; color: #374151; text-align: center; }
   .author-reg { font-size: 9pt; margin: 0.05em 0; color: #6b7280; text-align: center; }
-  .author-affiliation { font-size: 9pt; margin: 0.05em 0; color: #6b7280; font-style: italic; text-align: center; }
+  .author-affiliation { font-size: 9pt; margin: 0.05em 0; color: #6b7280; font-style: normal; text-align: center; font-family: 'Times New Roman', Times, serif; }
   .author-detail { font-size: 10pt; margin: 0.2em 0; color: #6b7280; }
   .keywords { 
     font-size: 10pt; 
@@ -450,6 +451,9 @@ const modernCleanCss = `
     max-width: 90%;
     font-family: 'Consolas', 'Monaco', monospace; 
     font-size: 9pt;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
   }
   .fig-caption { text-align: center; font-style: italic; font-size: 10pt; margin: 0.4em 0 1em 0; color: #6b7280; }
   
@@ -510,8 +514,8 @@ const classicAcademicCss = `
   .author-block { text-align: center; margin: 1em 0 2em 0; }
   .author-name { font-size: 10pt; font-weight: normal; font-variant: small-caps; margin: 0.15em 0 0; text-align: center; }
   .author-reg { font-size: 9pt; margin: 0.05em 0; color: #333; text-align: center; }
-  .author-affiliation { font-size: 9pt; font-style: italic; margin: 0.05em 0; text-align: center; }
-  .author-detail { font-size: 10pt; font-style: italic; margin: 0.2em 0; }
+  .author-affiliation { font-size: 9pt; font-style: normal; margin: 0.05em 0; text-align: center; font-family: 'Times New Roman', Times, serif; }
+  .author-detail { font-size: 10pt; font-style: normal; margin: 0.2em 0; font-family: 'Times New Roman', Times, serif; }
   .keywords { font-size: 10pt; margin: 1em 0 2em 0; text-align: center; font-style: italic; }
   
   h2 { 
@@ -532,7 +536,7 @@ const classicAcademicCss = `
   table th { background: #f5f5f0; font-variant: small-caps; font-weight: normal; }
   .table-caption { text-align: center; font-variant: small-caps; font-size: 10pt; margin: 1em 0 0.4em 0; letter-spacing: 1pt; }
   
-  pre.figure { background: #f9f9f5; border: 1px solid #ccc; padding: 1em; margin: 1em auto; max-width: 85%; font-family: 'Courier New', monospace; font-size: 9pt; }
+  pre.figure { background: #f9f9f5; border: 1px solid #ccc; padding: 1em; margin: 1em auto; max-width: 85%; font-family: 'Courier New', monospace; font-size: 9pt; white-space: pre-wrap; word-wrap: break-word; overflow-x: auto; }
   .fig-caption { text-align: center; font-style: italic; font-size: 10pt; margin: 0.4em 0 1em 0; }
   
   ul, ol { margin: 0.5em 0 1em 2em; }
