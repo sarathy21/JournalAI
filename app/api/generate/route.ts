@@ -3,9 +3,9 @@ import { auth } from '@clerk/nextjs/server'
 import { buildSectionPrompts } from '@/lib/prompts'
 
 // NVIDIA NIM API — OpenAI-compatible endpoint
-// Model: nvidia/llama-3.3-nemotron-super-49b-v1.5
-// High quality, long context (65k tokens), excellent for academic paper generation
-const NVIDIA_MODEL = 'nvidia/llama-3.3-nemotron-super-49b-v1.5'
+// Model: nvidia/llama-3.1-nemotron-ultra-253b-v1
+// High quality, long context, excellent for academic paper generation
+const NVIDIA_MODEL = 'nvidia/llama-3.1-nemotron-ultra-253b-v1'
 
 /** Remove all <think>...</think> blocks from a string (Nemotron reasoning tokens) */
 function stripThinkBlocks(text: string): string {
