@@ -186,7 +186,7 @@ async function htmlToDocxParagraphs(html: string): Promise<(Paragraph | Table)[]
     } else if (seg.startsWith('__AUTHOR_AFFILIATION__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: extractContent(seg, '__AUTHOR_AFFILIATION__').replace(/<[^>]+>/g, '').trim(), italics: false, size: 18, font: 'Times New Roman', color: '333333' })],
+          children: [new TextRun({ text: extractContent(seg, '__AUTHOR_AFFILIATION__').replace(/<[^>]+>/g, '').trim(), italics: true, size: 18, font: 'Times New Roman', color: '333333' })],
           alignment: AlignmentType.CENTER,
           spacing: { after: 10 },
         })
@@ -194,7 +194,7 @@ async function htmlToDocxParagraphs(html: string): Promise<(Paragraph | Table)[]
     } else if (seg.startsWith('__AUTHOR_DETAIL__')) {
       elements.push(
         new Paragraph({
-          children: [new TextRun({ text: extractContent(seg, '__AUTHOR_DETAIL__').replace(/<[^>]+>/g, '').trim(), italics: false, size: 18, font: 'Times New Roman' })],
+          children: [new TextRun({ text: extractContent(seg, '__AUTHOR_DETAIL__').replace(/<[^>]+>/g, '').trim(), italics: true, size: 18, font: 'Times New Roman' })],
           alignment: AlignmentType.CENTER,
           spacing: { after: 20 },
         })

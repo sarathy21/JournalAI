@@ -83,12 +83,8 @@ export function buildSectionPrompts(options: PaperOptions): SectionPrompt[] {
 
   // Build author lines for HTML — each author stacked vertically
   const authorNamesHtml = authors
-    .map(a => {
-      let html = `<p class="author-name">${a.name}</p>`
-      if (a.registerNumber) html += `\n<p class="author-reg">${a.registerNumber}</p>`
-      return html
-    })
-    .join('\n<br/>\n')
+    .map(a => `<p class="author-name">${a.name}</p>${a.registerNumber ? `\n<p class="author-reg">${a.registerNumber}</p>` : ''}`)
+    .join('\n')
 
   const affiliationLines = [department, college, affiliation].filter(Boolean)
   const affiliationHtml = affiliationLines
@@ -1289,9 +1285,9 @@ export function buildJournalPrompt(options: PaperOptions): string {
 
   const authorBlock = `<div class="author-block">
 <p class="author-name">${authorName}</p>
-${registerNumber ? `<p class="author-detail">${registerNumber}</p>` : ''}
-${department ? `<p class="author-detail">${department}</p>` : ''}
-${college ? `<p class="author-detail">${college}</p>` : ''}
+${registerNumber ? `<p class="author-reg">${registerNumber}</p>` : ''}
+${department ? `<p class="author-affiliation">${department}</p>` : ''}
+${college ? `<p class="author-affiliation">${college}</p>` : ''}
 </div>`
 
   return `You are an expert IEEE academic paper writer. Write a COMPLETE, LONG academic paper.
