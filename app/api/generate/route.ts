@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     let emitted = ''
 
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: 'system', content: sysMsg },
+      { role: 'system', content: 'detailed thinking on\n\n' + sysMsg },
       { role: 'user',   content: userMsg },
     ]
     if (assistantContext) {
